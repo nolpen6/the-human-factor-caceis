@@ -22,46 +22,65 @@ st.markdown(
     """
     <style>
     .stApp {
-        background: linear-gradient(180deg, #fff7fb 0%, #ffffff 45%, #f8f5ff 100%);
+        background-color: #fafafa;
+        color: #1f2933;
     }
 
     h1, h2, h3 {
-        color: #5c2448;
+        color: #1f2933;
+        font-weight: 700;
+    }
+
+    p, li, span, div {
+        color: #1f2933;
+    }
+
+    [data-testid="stSidebar"] {
+        background-color: #20242e;
+    }
+
+    [data-testid="stSidebar"] * {
+        color: #f5f7fa !important;
     }
 
     [data-testid="stMetricValue"] {
-        color: #7a2f63;
+        color: #1f2933;
+        font-weight: 700;
+    }
+
+    [data-testid="stMetricLabel"] {
+        color: #52616b;
     }
 
     .human-card {
         background-color: #ffffff;
-        border: 1px solid #f0d8e8;
-        border-radius: 18px;
+        border: 1px solid #d9e2ec;
+        border-radius: 14px;
         padding: 1.1rem 1.3rem;
-        box-shadow: 0 4px 14px rgba(92, 36, 72, 0.08);
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
         margin-bottom: 1rem;
     }
 
     .soft-note {
-        background-color: #fff0f7;
-        border-left: 5px solid #c05a9b;
-        border-radius: 12px;
+        background-color: #eef6f6;
+        border-left: 5px solid #3a7d7c;
+        border-radius: 10px;
         padding: 1rem 1.2rem;
         margin: 1rem 0;
-        color: #4b2940;
+        color: #1f2933;
     }
 
     .governance-note {
-        background-color: #f5f0ff;
-        border-left: 5px solid #7c5cc4;
-        border-radius: 12px;
+        background-color: #f1f5f9;
+        border-left: 5px solid #475569;
+        border-radius: 10px;
         padding: 1rem 1.2rem;
         margin: 1rem 0;
-        color: #3d3158;
+        color: #1f2933;
     }
 
     .small-muted {
-        color: #6f6070;
+        color: #cbd5e1;
         font-size: 0.92rem;
     }
     </style>
@@ -172,7 +191,7 @@ def soft_card(title: str, body: str):
 # SIDEBAR
 # --------------------------------------------------
 with st.sidebar:
-    st.markdown("## 🌸 The Human Factor")
+    st.markdown("## The Human Factor")
     st.markdown(
         """
         <p class="small-muted">
@@ -199,7 +218,7 @@ with st.sidebar:
 # --------------------------------------------------
 # HEADER
 # --------------------------------------------------
-st.title("🌸 The Human Factor @ CACEIS")
+st.title("The Human Factor @ CACEIS")
 st.caption("Rethinking human capital as a living, dynamic asset — not just a cost line.")
 
 st.markdown(
@@ -224,12 +243,13 @@ with col_c:
 # --------------------------------------------------
 # TABS
 # --------------------------------------------------
-tab1, tab2, tab3, tab4, tab5 = st.tabs(
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
     [
         "🌷 Overview",
         "💎 Value Explorer",
         "🤖 AI Segments",
         "📊 KPI Garden",
+        "📚 Document Intelligence",   # 👈 ADD THIS
         "🛡️ Method & Governance",
     ]
 )
@@ -556,11 +576,59 @@ with tab4:
             st.plotly_chart(fig, use_container_width=True)
         st.dataframe(training_kpi, use_container_width=True)
 
-
 # --------------------------------------------------
-# TAB 5 — METHOD & GOVERNANCE
+# TAB 5 — DOCUMENT INTELLIGENCE
 # --------------------------------------------------
 with tab5:
+    st.header("📚 Document Intelligence")
+
+    st.markdown(
+        """
+        This section transforms unstructured documents (PDFs, PPTs, Word files)
+        into structured insights. It connects qualitative organizational signals
+        (engagement, wellbeing, governance) with the quantitative KPI system.
+        """
+    )
+
+    project_root = Path(__file__).resolve().parents[1]
+    doc_path = project_root / "data" / "document_intelligence" / "document_theme_summary.csv"
+
+    if doc_path.exists():
+        doc_df = pd.read_csv(doc_path)
+
+        st.subheader("📊 Theme Distribution Across Documents")
+
+        fig = px.bar(
+            doc_df,
+            x="theme",
+            y="keyword_count",
+            color="document",
+            title="Detected Themes in Organizational Documents",
+        )
+        st.plotly_chart(fig, use_container_width=True)
+
+        st.subheader("📄 Document-Level Insights")
+        st.dataframe(doc_df, use_container_width=True)
+
+        st.markdown(
+            """
+            <div class="soft-note">
+            <b>How to read this:</b> These themes are not direct measures. They are signals extracted
+            from documents that provide context to structured KPIs. For example, strong presence of
+            "wellbeing" or "burnout" themes can help interpret absenteeism patterns.
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+    else:
+        st.warning("⚠️ document_theme_summary.csv not found. Run the extraction script first.")
+
+
+# --------------------------------------------------
+# TAB 6 — METHOD & GOVERNANCE
+# --------------------------------------------------
+with tab6:
     st.header("🛡️ Method and Governance")
 
     st.subheader("🔄 Pipeline")

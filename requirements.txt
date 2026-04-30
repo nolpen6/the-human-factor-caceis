@@ -7,3 +7,6 @@ scikit-learn
 streamlit
 plotly
 ipykernel
+pdfplumber 
+python-docx 
+python-pptx
