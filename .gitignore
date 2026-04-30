@@ -1,24 +1,47 @@
+# -------------------------
 # Python
+# -------------------------
 __pycache__/
 *.pyc
 
+# -------------------------
 # Jupyter
+# -------------------------
 .ipynb_checkpoints/
 
-# Data
+# -------------------------
+# Data (raw ONLY)
+# -------------------------
 data/raw/*
+!data/raw/.gitkeep
+
+# Optional: ignore large clean files
 data/clean/*
+!data/clean/.gitkeep
+
+# -------------------------
+# Outputs (KEEP essential ones)
+# -------------------------
+# Ignore everything first
 outputs/*
 
-# Keep folders
-!data/raw/.gitkeep
-!data/clean/.gitkeep
+# Keep only dashboard-required files
+!outputs/employee_value_table_v2.csv
+!outputs/department_value_summary_v2.csv
+!outputs/ai_segment_summary_v2.csv
+
+# Keep placeholder
 !outputs/.gitkeep
 
+# -------------------------
 # Environment
+# -------------------------
 .env
 .venv/
 venv/
 
+# -------------------------
 # OS
+# -------------------------
 .DS_Store
+Thumbs.db
