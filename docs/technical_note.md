@@ -1,143 +1,175 @@
-# 🧠 Technical Note — Human Capital Valuation Prototype
+# 🧠 Technical Note — Human Capital Valuation System
 
-## 💭 Objective
+## Objective
 
-This document explains how raw HR data is transformed into:
+Explain how raw HR data is transformed into:
 
-* behavioral KPIs
-* an integrated employee dataset
-* a human capital value proxy
-* AI-based segmentation
-
----
-
-## 🔄 Pipeline Overview
-
-The system follows a 5-step pipeline:
-
-1. Data cleaning
-2. KPI engineering
-3. Data integration
-4. Value proxy construction
-5. AI segmentation
+- interpretable signals
+- a valuation framework
+- AI-driven insights
+- decision-support outputs in the dashboard
 
 ---
 
-## 🧹 1. Data Cleaning
+## System Overview
 
-Key steps:
+Pipeline:
 
-* standardization of identifiers
-* missing value handling
-* consistency checks across datasets
-
-👉 Goal: ensure datasets can be merged reliably
-
----
-
-## 📊 2. KPI Engineering
-
-We transform raw variables into interpretable indicators:
-
-| KPI                | Interpretation       |
-| ------------------ | -------------------- |
-| Performance Score  | Current contribution |
-| Learning Intensity | Future capability    |
-| Absenteeism Risk   | Sustainability risk  |
-| Talent Progression | Growth trajectory    |
-
-👉 Important:
-
-> KPIs are **proxies**, not direct measures of value
+1. Data cleaning  
+2. KPI engineering  
+3. Data integration  
+4. Signal construction  
+5. Valuation layer  
+6. AI segmentation  
+7. Recommendation engine  
+8. Dashboard views  
 
 ---
 
-## 🔗 3. Data Integration
+## 1. Data Cleaning
 
-All datasets are merged at the employee level.
+- identifier standardization
+- missing value handling
+- dataset consistency checks
 
-We introduce:
-
-* `data_coverage_score` → how complete the data is
-* `kpi_reliability_score` → how trustworthy the signals are
-
-👉 This prevents:
-
-* misinterpreting missing data as low performance
+Goal:
+Ensure reliable joins across HR, performance, training, and absence data.
 
 ---
 
-## 💎 4. Value Proxy Construction
+## 2. KPI Engineering
 
-We define a composite score:
+| KPI                     | Meaning |
+|------------------------|--------|
+| performance_score      | current contribution proxy |
+| learning_intensity     | future capability |
+| absenteeism_risk       | sustainability risk |
+| talent_progression     | growth trajectory |
 
-Value ≈
+👉 KPIs are proxies, not value.
 
-* Performance
-* Learning
-* Talent progression
-  − Absenteeism risk
+---
 
-Adjusted by:
+## 3. Data Integration
 
-* data reliability
+All datasets merged at employee level.
+
+We create:
+
+- `data_coverage_score`
+- `kpi_reliability_score`
+
+👉 Prevents:
+misinterpreting missing data as low performance.
+
+---
+
+## 4. Signal Construction
+
+From KPIs, we build:
+
+- contribution_signal
+- learning_future_value_signal
+- sustainability_signal
+- progression_signal
+- interpretation_confidence
+
+These are the **core building blocks** of the dashboard.
+
+---
+
+## 5. Valuation Layer (Blue-Line Logic)
+
+We estimate: 
+>> Sustainable Value Potential = 0.35 * contribution
+
+- 0.30 * learning
+- 0.20 * sustainability
+- 0.15 * progression
+
+Adjusted by: 
+>> Reliability-adjusted value = value * nterpretation_confidence
+
 
 👉 This is:
-
-* **not financial value**
-* a **decision-support indicator**
-
----
-
-## 🤖 5. AI Segmentation
-
-We apply clustering to group employees based on KPIs.
-
-### Objective
-
-* identify patterns
-* structure decision-making
-
-### Output segments
-
-* Low Information
-* Engaged but At Risk
-* High Performers
-
-👉 Important:
-
-> Segments are **exploratory**, not prescriptive.
+- not financial value
+- a structured interpretation of signals
 
 ---
 
-## ⚠️ Methodological Limits
+## 6. AI Segmentation
 
-* No direct link to financial output
-* KPIs rely on imperfect proxies
-* clustering depends on data quality
-* risk of bias in performance evaluations
+Clustering groups employees into patterns:
 
----
+- Sustainable Value Builders
+- Value Under Pressure
+- Future Value Builders
+- Under-Observed Profiles
 
-## 🧠 Design Philosophy
-
-This system follows three principles:
-
-### 1. Interpretability over complexity
-
-Simple, explainable indicators
-
-### 2. Human-centered approach
-
-Focus on behavior, not just metrics
-
-### 3. Decision support, not automation
-
-The model supports discussion — not replaces it
+👉 Purpose:
+support interpretation, not automate decisions.
 
 ---
 
-## 🧩 Final Insight
+## 7. Recommendation Engine
 
-> The objective is not to measure human capital perfectly,
-> but to build a system that makes **better decisions possible**.
+Instead of fixed actions, the system generates:
+
+- recommended experiments
+- expected signal changes
+- decision owners
+- governance guardrails
+
+👉 Key idea:
+> Move from “action” to “learning loop”
+
+---
+
+## 8. Dashboard Design
+
+Role-based views:
+
+### Employee
+- personal signals
+- interpretation in plain language
+- next steps
+- context input
+
+### Manager
+- team signals
+- dynamic coaching questions
+- risk detection
+
+### HR
+- workforce patterns
+- reliability monitoring
+- intervention targeting
+
+### Product Owner
+- system health
+- model monitoring
+- governance checks
+
+---
+
+## Methodological Limits
+
+- no financial value linkage
+- proxy-based indicators
+- bias risk (performance data)
+- missing key signals (workload, collaboration)
+
+---
+
+## Design Philosophy
+
+1. Interpretability over complexity  
+2. Human-centered (no ranking)  
+3. Decision support, not automation  
+
+---
+
+## Final Insight
+
+> The system does not measure human value.
+> It structures signals to support better decisions.

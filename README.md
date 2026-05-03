@@ -53,36 +53,55 @@ Important principle: **KPIs are not value — they are signals of underlying beh
 
 caceis-human-capital-pipeline/
 │
+├── dashboard/
+│   ├── final version/
+│   │   └── streamlit_app_v4.py        # Final Streamlit dashboard
+│   └── old version/
+│       ├── streamlit_app_v0.py
+│       ├── streamlit_app_v1.py
+│       ├── streamlit_app_v2.py
+│       └── streamlit_app_v3.py        # Previous dashboard versions
+│
 ├── data/
-│ ├── raw/ # Original data (not tracked)
-│ └── clean/ # Processed datasets
-│
-├── notebooks/ # Analysis workflow
-│ ├── 01_cleaning.ipynb
-│ ├── 02_kpis.ipynb
-│ ├── 03_eda.ipynb
-│ ├── 04_integrated_value_ai.ipynb
-│
-├── src/ # Core pipeline logic
-│ ├── data_cleaning.py
-│ ├── kpi_engineering.py
-│ ├── 04_integrated_value_ai.py
-│
-├── dashboard/ # Streamlit app
-│ ├── streamlit_app_v1.py
-│ └── streamlit_app_v2.py
-│
-├── outputs/ # Results
-│ ├── hr_kpi_table.csv
-│ ├── absence_kpi_table.csv
-│ ├── training_kpi_table.csv
-│ ├── employee_value_table_v2.csv
-│ ├── department_value_summary_v2.csv
-│ ├── ai_segment_summary_v2.csv
+│   ├── raw/
+│   │   ├── Structured/                # Original structured HR datasets
+│   │   └── Unstructured/              # Original PDFs, PPTs, DOCX, etc.
+│   ├── clean/                         # Cleaned / processed datasets
+│   └── document_intelligence/
+│       ├── document_inventory.csv
+│       └── document_theme_summary.csv # Extracted document themes
 │
 ├── docs/
-│ ├── data_inventory.md
-│ ├── technical_note.md
+│   ├── data_inventory.md              # Dataset and signal documentation
+│   └── technical_note.md              # Methodology and technical explanation
+│
+├── ├── notebooks/                         # Step-by-step analytical workflow
+│   ├── 01_cleaning.ipynb             # Data cleaning and preprocessing
+│   ├── 02_kpis.ipynb                 # KPI engineering (performance, learning, risk)
+│   ├── 03_eda.ipynb                  # Exploratory data analysis
+│   └── 04_integrated_value_ai.ipynb  # Integrated dataset + valuation + AI segmentation logic
+│
+├── outputs/
+│   ├── hr_kpi_table.csv
+│   ├── absence_kpi_table.csv
+│   ├── training_kpi_table.csv
+│   ├── employee_value_table_v2.csv
+│   ├── department_value_summary_v2.csv
+│   ├── ai_segment_summary_v2.csv
+│   ├── recommendation_table.csv
+│   ├── onevalue_ai_insights.csv
+│   ├── risk_prediction_table.csv
+│   ├── employee_context_log.csv
+│   └── manager_context_log.csv
+│
+├── src/                               # Core data and AI pipeline (production logic)
+│   ├── data_cleaning.py              # Cleans and standardizes raw HR datasets
+│   ├── kpi_engineering.py            # Builds KPIs (performance, learning, risk)
+│   ├── integrated_value_ai.py        # Main pipeline: integrates data + builds valuation signals
+│   ├── onevalue_ai_layer.py          # AI interpretation layer (insights, hypotheses, segments)
+│   ├── recommendation_engine.py      # Generates recommendations and experiments
+│   ├── risk_prediction.py            # Risk scoring logic (prototype)
+│   └── document_theme_extraction.py  # Extracts themes from unstructured documents    
 │
 ├── README.md
 └── requirements.txt

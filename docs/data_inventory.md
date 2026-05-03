@@ -1,133 +1,122 @@
 # 📦 Data Inventory — Human Capital Signals
 
-## 💭 Objective
+## Objective
 
-This document maps available datasets to the **dimensions of human capital value** they help capture.
+Map available datasets to the **value signals used in the dashboard**.
 
-👉 The goal is not just to list data,
-but to understand **what part of human behavior and value each dataset reveals**.
-
----
-
-## 🧠 Framework
-
-We classify data into 4 value dimensions:
-
-| Dimension       | What it captures         |
-| --------------- | ------------------------ |
-| **Performance** | Current contribution     |
-| **Learning**    | Future capability        |
-| **Risk**        | Sustainability / burnout |
-| **Coverage**    | Data reliability         |
+This is not just a data list — it explains:
+- what each dataset measures
+- how it is used in the pipeline
+- what signal it produces
+- what its limits are
 
 ---
 
-## 📊 Available Data Sources
+## Value Dimensions (used in the dashboard)
+
+| Dimension        | What it means                     | Example signal                    |
+|----------------|----------------------------------|----------------------------------|
+| Contribution    | Current observable impact        | performance_score                |
+| Learning        | Future capability                | learning_intensity_score         |
+| Sustainability  | Continuity / risk                | absenteeism_risk_score           |
+| Reliability     | Data quality / completeness      | kpi_reliability_score            |
+
+---
+
+## Available Data Sources
 
 ### 1. HR Master Data
 
-**Description**
-Core employee information (role, department, tenure, etc.)
-
 **Used for**
+- joins and segmentation
+- department / role context
 
-* population structure
-* segmentation
-* joining datasets
+**Feeds**
+- grouping in dashboard
+- comparison across teams
 
-**Value Contribution**
-
-* contextualizes performance
-* enables comparisons across teams
-
-**Limitations**
-
-* static snapshot
-* no direct behavioral insight
+**Limitation**
+- no behavioral signal
 
 ---
 
 ### 2. Performance Data
 
-**Description**
-Employee performance evaluations
+**Feeds**
+- `performance_score`
+- `performance_consistency_score`
 
-**Used for**
-
-* performance_score
-
-**Value Contribution**
-
-* proxy for current contribution
+**Used in**
+- contribution signal
+- manager view
 
 **Limitations**
-
-* subjective (bias: halo effect, recency bias)
-* low frequency (often annual)
+- subjective (bias)
+- low frequency
 
 ---
 
 ### 3. Absenteeism Data
 
-**Description**
-Absence days and patterns
+**Feeds**
+- `absenteeism_risk_score`
 
-**Used for**
-
-* absenteeism_risk_score
-
-**Value Contribution**
-
-* proxy for operational risk
-* early signal of disengagement or burnout
+**Used in**
+- sustainability signal
+- risk detection
 
 **Limitations**
-
-* lagging indicator
-* does not capture root causes
+- lagging indicator
+- does not explain cause
 
 ---
 
 ### 4. Training Data
 
-**Description**
-Training hours and participation
+**Feeds**
+- `learning_intensity_score`
 
-**Used for**
-
-* learning_intensity_score
-
-**Value Contribution**
-
-* proxy for future capability
-* indicates investment in human capital
+**Used in**
+- development signal
+- employee dashboard
 
 **Limitations**
-
-* measures participation, not learning quality
-* does not ensure skill application
-
----
-
-## 🔗 Data Gaps (Critical Insight)
-
-The following dimensions are **missing but essential**:
-
-* real productivity (output per employee)
-* collaboration / network effects
-* workload distribution
-* early burnout indicators (before absence)
-
-👉 These gaps explain why:
-
-> the value proxy remains an approximation, not a full valuation.
+- measures participation, not skill
+- no guarantee of application
 
 ---
 
-## 🧩 Key Takeaway
+## Derived Signals (from code)
 
-> Data does not directly measure value.
-> It captures **signals of behavior**, from which value must be inferred.
+| Signal                         | Meaning |
+|------------------------------|--------|
+| contribution_signal           | current contribution proxy |
+| learning_future_value_signal  | development / future capability |
+| sustainability_signal         | inverse of absence risk |
+| interpretation_confidence     | data reliability |
+| sustainable_value_potential   | combined signal |
 
-The challenge is not collecting more data,
-but **connecting data to decision-making.**
+---
+
+## Key Gap (IMPORTANT FOR REPORT)
+
+Missing but critical:
+- workload / pressure data
+- collaboration / network effects
+- productivity / output metrics
+
+👉 This explains why:
+
+> The system estimates **value potential**, not actual value.
+
+---
+
+## Final Insight
+
+> Data does not measure value.
+> It captures signals that must be interpreted.
+
+The system’s purpose is to:
+- structure these signals
+- support decisions
+- highlight where human judgment is needed
