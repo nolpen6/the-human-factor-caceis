@@ -12,7 +12,7 @@ px.defaults.template = "plotly_white"
 # PAGE CONFIG
 # --------------------------------------------------
 st.set_page_config(
-    page_title="The Human Factor @ CACEIS",
+    page_title="ONEValue @CACEIS",
     page_icon="🧭",
     layout="wide",
 )
@@ -140,7 +140,7 @@ st.markdown(
 @st.cache_data
 def load_data():
     """Load structured KPI outputs and optional document intelligence outputs."""
-    project_root = Path(__file__).resolve().parents[1]
+    project_root = Path(__file__).resolve().parents[2]
     outputs_dir = project_root / "outputs"
     doc_dir = project_root / "data" / "document_intelligence"
 
@@ -620,67 +620,172 @@ def show_recommendations(rec_df: pd.DataFrame, title: str = "Recommended Actions
 # SIDEBAR
 # --------------------------------------------------
 with st.sidebar:
-    st.markdown("## The Human Factor")
+    st.markdown("## ONEValue")
     st.markdown(
-        """
-        <p class="small-muted">
-        A role-based student prototype for exploring human capital as a living asset:
-        performance, learning, risk, reliability, and context.
-        </p>
-        """,
-        unsafe_allow_html=True,
+    """
+    <p class="small-muted">
+    A decision-based human capital system that links employee actions, learning, and risk to value creation.
+    </p>
+    """,
+    unsafe_allow_html=True,
     )
     st.divider()
-    st.markdown("### Reading guide")
+    st.markdown("### Platform principles")
     st.markdown(
-        """
-        - **Do not rank people mechanically**  
-        - **Check data reliability first**  
-        - **Use AI outputs as questions, not verdicts**  
-        - **Interpret value as a proxy, not truth**
-        """
+    """
+    - **Start with signals, not conclusions**  
+    - **Interpret value through context, not scores**  
+    - **Focus on decisions and behaviors, not outcomes alone**  
+    - **Use AI to identify patterns, not to judge individuals**  
+    - **Always validate signals before acting**
+    """
     )
     st.divider()
-    st.caption("Made for the CACEIS x Albert School Alberthon")
+    st.caption("Human Capital Intelligence Prototype · Built for CACEIS")
 
 
 # --------------------------------------------------
 # HEADER
 # --------------------------------------------------
-st.title("The Human Factor @ CACEIS")
-st.caption("A role-based human capital intelligence prototype — built for learning, coaching, governance, and model monitoring.")
+st.title("ONEValue by CACEIS")
+st.caption(
+    "A human capital intelligence platform inspired by the ONE CACEIS culture: care, growth, responsibility, and learning."
+)
 
 note(
-    "<b>Core idea:</b> we are not measuring people as scores. We are building a system that helps different users interpret signals of learning, risk, reliability, and value creation.",
+    "<b>Welcome.</b> Sign in to access your role-based workspace. "
+    "Sign in to access your workspace. The platform adapts to your role: employees track development, managers act on team signals, HR analyzes workforce patterns, and product owners oversee system performance.",
     "soft",
 )
 
 col_a, col_b, col_c = st.columns(3)
+
 with col_a:
-    soft_card("Human signals", "HR, absenteeism, training, performance, finance/FTE, and unstructured documents.")
+    soft_card(
+        "From behavior to value",
+        "The platform captures employee actions, learning, and signals to understand how value is actually created over time."
+    )
+
 with col_b:
-    soft_card("Behavioral KPIs", "Proxies for learning, continuity risk, development, and data reliability.")
+    soft_card(
+        "Signals, not scores",
+        "KPIs are treated as indicators, not truth. They help identify patterns, risks, and opportunities—not rank individuals."
+    )
+
 with col_c:
-    soft_card("AI insight layer", "Segmentation, risk labelling, and recommendations that support—not replace—human judgment.")
+    soft_card(
+        "Decision support system",
+        "AI highlights segments, risks, and recommendations so managers and HR can act earlier and more effectively."
+    )
 
-
-# --------------------------------------------------
-# ROLE SELECTOR
-# --------------------------------------------------
-role = st.selectbox(
-    "Select user perspective",
-    ["Employee", "Manager", "HR", "Data / AI Admin"],
-    index=2,
+st.caption(
+    "Built by Anna Mika, Nolwenn Montillot, Emma Lou Villaret, and Hannah Zilesch · CACEIS x Albert School Alberthon"
 )
 
-ROLE_DESCRIPTIONS = {
-    "Employee": "Self-development and learning. The employee sees only their own signals, interpretation, and suggested development actions.",
-    "Manager": "Team coaching and workload support. The manager sees aggregated team indicators and risk signals, not a punitive ranking tool.",
-    "HR": "Workforce governance and strategic planning. HR sees cross-team patterns, bias/data-quality checks, document context, and recommendations.",
-    "Data / AI Admin": "Model development and monitoring. The admin view checks data coverage, pipeline outputs, AI segments, and document intelligence quality.",
+# --------------------------------------------------
+# AUTHENTICATION (DEMO)
+# --------------------------------------------------
+st.sidebar.markdown("### Access")
+
+# Pick two employee demo accounts with the strongest data coverage
+employee_demo_accounts = (
+    employee_value.sort_values(
+        by=["data_coverage_score", "kpi_reliability_score"],
+        ascending=False
+    )
+    .head(2)["display_employee"]
+    .tolist()
+    if {"data_coverage_score", "kpi_reliability_score", "display_employee"}.issubset(employee_value.columns)
+    else employee_value["display_employee"].head(2).tolist()
+)
+
+# Pick two manager demo accounts with the largest teams
+if department_col:
+    manager_demo_departments = (
+        employee_value.groupby(department_col)
+        .size()
+        .sort_values(ascending=False)
+        .head(2)
+        .index
+        .tolist()
+    )
+else:
+    manager_demo_departments = []
+
+USERS = {
+    "emp_001": {
+        "role": "Employee",
+        "id": employee_demo_accounts[0] if len(employee_demo_accounts) > 0 else "Employee P-001",
+    },
+    "emp_002": {
+        "role": "Employee",
+        "id": employee_demo_accounts[1] if len(employee_demo_accounts) > 1 else "Employee P-002",
+    },
+    "mgr_001": {
+        "role": "Manager",
+        "department": manager_demo_departments[0] if len(manager_demo_departments) > 0 else None,
+    },
+    "mgr_002": {
+        "role": "Manager",
+        "department": manager_demo_departments[1] if len(manager_demo_departments) > 1 else None,
+    },
+    "hr_001": {"role": "HR"},
+    "admin_001": {"role": "Product Owner"},
 }
 
-note(f"<b>Current view:</b> {ROLE_DESCRIPTIONS[role]}", "governance")
+if "logged_in_user" not in st.session_state:
+    st.session_state.logged_in_user = None
+
+if st.session_state.logged_in_user:
+    current_login = st.session_state.logged_in_user
+    current_user = USERS[current_login]
+
+    st.sidebar.success(f"Signed in as: {current_login} ({current_user['role']})")
+
+    if st.sidebar.button("Sign out"):
+        st.session_state.logged_in_user = None
+        st.rerun()
+
+else:
+    login = st.sidebar.text_input("Enter demo login ID")
+
+    if login in USERS:
+        st.session_state.logged_in_user = login
+        st.rerun()
+
+    st.markdown("## Sign in required")
+
+    st.info("Enter a demo login ID in the sidebar to unlock your workspace.")
+
+    st.markdown("### Demo login IDs")
+
+    emp_col, mgr_col, other_col, spacer = st.columns([1, 1, 1, 3])
+
+    with emp_col:
+        st.markdown("**Employees**")
+        st.markdown("`emp_001`")
+        st.markdown("`emp_002`")
+
+    with mgr_col:
+        st.markdown("**Managers**")
+        st.markdown("`mgr_001`")
+        st.markdown("`mgr_002`")
+
+    with other_col:
+        st.markdown("**Other roles**")
+        st.markdown("`hr_001`")
+        st.markdown("`admin_001`")
+
+    note(
+        "<b>Access control:</b> users only see the data required for their role. "
+        "Production systems would enforce this through secure authentication.",
+        "governance",
+    )
+
+    st.stop()
+
+user = USERS[st.session_state.logged_in_user]
+role = user["role"]
 
 
 # --------------------------------------------------
@@ -689,10 +794,16 @@ note(f"<b>Current view:</b> {ROLE_DESCRIPTIONS[role]}", "governance")
 if role == "Employee":
     tab1, tab2 = st.tabs(["My Signals", "My Development"])
 
-    employee_profiles = sorted(employee_value["display_employee"].dropna().unique()) if "display_employee" in employee_value.columns else []
-    selected_employee = st.selectbox("Select employee profile for demo", employee_profiles) if employee_profiles else None
-    emp = employee_value[employee_value["display_employee"] == selected_employee].iloc[0] if selected_employee else None
+    selected_employee = user["id"]
+    
+    employee_match = employee_value[employee_value["display_employee"] == selected_employee]
 
+    if employee_match.empty:
+        emp = None
+        st.warning(f"No profile found for {selected_employee}. Check the demo user mapping.")
+    else:
+        emp = employee_match.iloc[0]
+    
     with tab1:
         st.header("My Signals")
         if emp is None:
@@ -761,14 +872,20 @@ elif role == "Manager":
     tab1, tab2, tab3 = st.tabs(["Team Overview", "Risk & Signals", "Actions"])
 
     if department_col:
-        departments = sorted(employee_value[department_col].dropna().unique())
-        selected_department = st.selectbox("Select team / department", departments)
+        selected_department = user["department"]
         team = employee_value[employee_value[department_col] == selected_department].copy()
-    else:
-        selected_department = "All employees"
-        team = employee_value.copy()
-        st.warning("No department column detected. Showing all employees for demo purposes.")
 
+        if team.empty:
+            st.warning(
+                f"No employees found for manager department: {selected_department}. "
+                "Check the demo user mapping or department names in the data."
+            )
+    else:
+        selected_department = "No department detected"
+        team = pd.DataFrame()
+        st.error("No department column detected. Manager access cannot be safely simulated.")
+        st.stop()
+    
     with tab1:
         st.header("Team Overview")
         st.markdown(f"Team selected: **{selected_department}**")
@@ -881,8 +998,12 @@ elif role == "HR":
             fig = px.bar(segment_counts, x="segment_name", y="employees", title="Number of employees by AI segment")
             st.plotly_chart(clean_chart(fig), use_container_width=True)
 
-        note("<b>Leadership use:</b> CACEIS leadership does not need individual-level views. HR can provide aggregated workforce-risk and value-creation summaries from this perspective.", "governance")
-
+        note(
+            "<b>HR governance:</b> HR can access cross-team workforce patterns, data-quality checks, and strategic recommendations. "
+            "Individual identifiers should remain pseudonymized and only be used when there is a legitimate support or governance need.",
+            "governance",
+        )
+       
     with tab2:
         st.header("Value Explorer")
         filtered = employee_value.copy()
@@ -928,7 +1049,6 @@ elif role == "HR":
             st.plotly_chart(clean_chart(fig), use_container_width=True)
 
         display_cols = [
-            "display_employee",
             department_col,
             "segment_name",
             "risk_prediction_label",
@@ -1031,21 +1151,23 @@ elif role == "HR":
                 {"Phase": "1. Prototype", "Focus": "Structured KPIs, value proxy, AI segmentation", "Owner": "Student/Data team"},
                 {"Phase": "2. Evolved prototype", "Focus": "Document intelligence, recommendations, role-based views", "Owner": "HR + Data/AI"},
                 {"Phase": "3. Pilot", "Focus": "Department-level testing, feedback loops, bias checks", "Owner": "HR + managers"},
-                {"Phase": "4. Scale", "Focus": "Snowflake integration, governance workflows, model monitoring", "Owner": "Data/AI Admin + HR"},
+                {"Phase": "4. Scale", "Focus": "Snowflake integration, governance workflows, model monitoring", "Owner": "Product Owner + HR"},
             ]
         )
         st.dataframe(roadmap, use_container_width=True)
 
 
 # --------------------------------------------------
-# DATA / AI ADMIN VIEW
+# PRODUCT OWNER / ADMIN VIEW
 # --------------------------------------------------
-elif role == "Data / AI Admin":
+elif role == "Product Owner":
     tab1, tab2, tab3, tab4, tab5 = st.tabs(["Pipeline Health", "Data Quality", "Model Monitoring", "Recommendation Monitoring", "Document Pipeline"])
 
     with tab1:
-        st.header("Pipeline Health")
-        st.markdown("Admin view for the Data/AI team: monitor reproducibility, data availability, and output readiness.")
+        st.header("Pipeline & Product Health")
+        st.markdown(
+    "Admin/Product Owner view for monitoring reproducibility, data availability, model behavior, recommendation outputs, and responsible deployment readiness."
+        )
 
         output_checks = pd.DataFrame(
             [

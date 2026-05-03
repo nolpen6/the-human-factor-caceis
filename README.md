@@ -1,5 +1,5 @@
-# 📊 The Human Factor @CACEIS
-### Turning people into value — beyond spreadsheets
+# 📊 ONEValue @CACEIS
+### From KPI Dashboard to Human Capital Value System
 
 ---
 
@@ -10,37 +10,40 @@ In most organizations, people appear in dashboards as costs, headcounts, or scor
 But humans are not static resources.
 
 They are:
-- evolving
-- learning
-- interacting
-- burning out
-- amplifying each other’s performance
+- learn
+- adapt
+- collaborate
+- take decisions
+- experience workload and recovery cycles
 
-This project explores a simple but powerful idea:
->> Value is not just created by what people do — but by how they behave, adapt, and sustain performance over time.**
+This project explores a core idea:
+>> Value is created through behaviors and decisions — not just outcomes.
 
 ---
 
 ## 🧠 Our Approach
 
-We designed a bottom-up, human-centered framework to approximate human capital value.
+We move from a KPI dashboard to a value-creation system.
 
 **3-Layer System**
 
-1. Human Signals (Raw Data)
-HR, absenteeism, training, performance, and workforce structure
+1. Behavioral Layer (NEW CORE)
+- decisions taken
+- actions performed
+- employee inputs
+- manager context
+- learning loops
 
-2. Behavioral KPIs (Interpretation Layer)
-Proxies capturing:
-- engagement
-- learning dynamics
-- productivity patterns
-- early risk signals
+2. Indicator Layer (KPIs)
+- performance
+- absenteeism
+- learning
+- progression
 
-3. AI Layer (Structuring Insight)
-- employee segmentation
+3. Value Layer (AI & Interpretation)
+- segmentation
 - pattern detection
-- decision-support insights
+- decision-support recommendations
 
 Important principle: **KPIs are not value — they are signals of underlying behaviors.**
 

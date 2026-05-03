@@ -19,7 +19,8 @@ from sklearn.metrics import silhouette_score
 from sklearn.preprocessing import StandardScaler
 
 
-DATA_DIR = Path(".")  # change to Path("data/processed") if needed
+BASE = Path(__file__).resolve().parents[1]
+DATA_DIR = BASE / "outputs"# change to Path("data/processed") if needed
 
 
 def load_inputs(data_dir: Path = DATA_DIR):
@@ -169,6 +170,7 @@ def add_ai_segments(employee: pd.DataFrame, n_clusters: int = 4):
             cluster_names[cluster] = "Stable baseline profile"
 
     employee["ai_segment_label"] = employee["ai_segment"].map(cluster_names)
+    employee["segment_name"] = employee["ai_segment_label"]
 
     return employee, cluster_summary, silhouette
 
@@ -210,9 +212,9 @@ def main():
     employee, cluster_summary, silhouette = add_ai_segments(employee)
     department_summary = build_department_summary(employee)
 
-    employee.to_csv("employee_value_table_v2.csv", index=False, encoding="utf-8-sig")
-    department_summary.to_csv("department_value_summary_v2.csv", index=False, encoding="utf-8-sig")
-    cluster_summary.to_csv("ai_segment_summary_v2.csv", encoding="utf-8-sig")
+    employee.to_csv(DATA_DIR / "employee_value_table_v2.csv", index=False, encoding="utf-8-sig")
+    department_summary.to_csv(DATA_DIR / "department_value_summary_v2.csv", index=False, encoding="utf-8-sig")
+    cluster_summary.to_csv(DATA_DIR / "ai_segment_summary_v2.csv", encoding="utf-8-sig")
 
     print()
     print("Generated outputs")
