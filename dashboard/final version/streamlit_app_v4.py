@@ -239,6 +239,71 @@ employee_value["display_employee"] = [
     f"Employee P-{i + 1:03d}" for i in range(len(employee_value))
 ]
 
+# --------------------------------------------------
+# BLUE-LINE VALUATION COMPATIBILITY
+# --------------------------------------------------
+def normalize_dashboard_series(series: pd.Series) -> pd.Series:
+    series = pd.to_numeric(series, errors="coerce")
+    if series.notna().sum() == 0:
+        return pd.Series(0.5, index=series.index)
+    min_val = series.min()
+    max_val = series.max()
+    if pd.isna(min_val) or pd.isna(max_val) or min_val == max_val:
+        return pd.Series(0.5, index=series.index)
+    return ((series - min_val) / (max_val - min_val)).fillna(0.5)
+
+if "contribution_signal" not in employee_value.columns:
+    employee_value["contribution_signal"] = normalize_dashboard_series(employee_value.get("performance_score", pd.Series(0.5, index=employee_value.index)))
+if "learning_future_value_signal" not in employee_value.columns:
+    employee_value["learning_future_value_signal"] = normalize_dashboard_series(employee_value.get("learning_intensity_score", pd.Series(0.5, index=employee_value.index)))
+if "sustainability_signal" not in employee_value.columns:
+    employee_value["sustainability_signal"] = 1 - normalize_dashboard_series(employee_value.get("absenteeism_risk_score", pd.Series(0.5, index=employee_value.index)))
+if "progression_signal" not in employee_value.columns:
+    employee_value["progression_signal"] = normalize_dashboard_series(employee_value.get("talent_progression_proxy", pd.Series(0.5, index=employee_value.index)))
+if "interpretation_confidence" not in employee_value.columns:
+    employee_value["interpretation_confidence"] = normalize_dashboard_series(employee_value.get("kpi_reliability_score", pd.Series(0.5, index=employee_value.index)))
+if "sustainable_value_potential" not in employee_value.columns:
+    employee_value["sustainable_value_potential"] = (
+        0.35 * employee_value["contribution_signal"]
+        + 0.30 * employee_value["learning_future_value_signal"]
+        + 0.20 * employee_value["sustainability_signal"]
+        + 0.15 * employee_value["progression_signal"]
+    )
+if "reliability_adjusted_value_potential" not in employee_value.columns:
+    employee_value["reliability_adjusted_value_potential"] = employee_value["sustainable_value_potential"] * employee_value["interpretation_confidence"]
+if "interpretation_risk" not in employee_value.columns:
+    employee_value["interpretation_risk"] = employee_value["sustainable_value_potential"] * (1 - employee_value["interpretation_confidence"])
+if "valuation_archetype" not in employee_value.columns:
+    def dashboard_archetype(row):
+        if row.get("interpretation_confidence", 0.5) < 0.4:
+            return "Under-Observed Profile"
+        if row.get("contribution_signal", 0.5) >= 0.65 and row.get("sustainability_signal", 0.5) < 0.45:
+            return "Value Under Pressure"
+        if row.get("contribution_signal", 0.5) >= 0.65 and row.get("learning_future_value_signal", 0.5) < 0.4:
+            return "Strong Contributor / Low Development"
+        if row.get("learning_future_value_signal", 0.5) >= 0.65 and row.get("contribution_signal", 0.5) < 0.55:
+            return "Future Value Builder"
+        if row.get("sustainable_value_potential", 0.5) >= 0.65 and row.get("sustainability_signal", 0.5) >= 0.55 and row.get("learning_future_value_signal", 0.5) >= 0.55:
+            return "Sustainable Value Builder"
+        if row.get("learning_future_value_signal", 0.5) < 0.4 and row.get("contribution_signal", 0.5) < 0.55:
+            return "Low Learning Visibility"
+        return "Stable / Monitor"
+    employee_value["valuation_archetype"] = employee_value.apply(dashboard_archetype, axis=1)
+if "blue_line_question" not in employee_value.columns:
+    employee_value["blue_line_question"] = employee_value["valuation_archetype"].map({
+        "Under-Observed Profile": "Do we have enough reliable data to interpret this profile safely?",
+        "Value Under Pressure": "Is current contribution being created in a sustainable way?",
+        "Strong Contributor / Low Development": "Are strong contributors receiving enough future-oriented development?",
+        "Future Value Builder": "How can learning investment be converted into measurable contribution?",
+        "Sustainable Value Builder": "What conditions are enabling sustainable value creation here?",
+        "Low Learning Visibility": "Is low learning due to limited access, limited need, low motivation, or missing data?",
+        "Stable / Monitor": "What should be monitored to sustain contribution and development over time?",
+    }).fillna("What context should be validated before acting on this signal?")
+
+# Backward-compatible names for old charts.
+employee_value["human_capital_value_proxy"] = employee_value.get("human_capital_value_proxy", employee_value["sustainable_value_potential"])
+employee_value["reliability_adjusted_value_proxy"] = employee_value.get("reliability_adjusted_value_proxy", employee_value["reliability_adjusted_value_potential"])
+
 if {"learning_intensity_score", "absenteeism_risk_score"}.issubset(employee_value.columns):
     employee_value["sustainability_balance"] = (
         employee_value["learning_intensity_score"] - employee_value["absenteeism_risk_score"]
@@ -397,6 +462,15 @@ else:
     }.items():
         if col not in recommendation_df.columns:
             recommendation_df[col] = default
+    for col, default in {
+        "recommended_experiment": "Maintain regular check-ins and monitor signal evolution.",
+        "expected_signal_change": "Stable or improved signals over the next review cycle.",
+        "review_period": "1 quarter",
+        "decision_owner": "Employee / Manager",
+        "governance_guardrail": "Use indicators as learning prompts, not rankings.",
+    }.items():
+        if col not in recommendation_df.columns:
+            recommendation_df[col] = default
 
 
 # --------------------------------------------------
@@ -520,6 +594,72 @@ def show_context_summary(employee_log: pd.DataFrame, manager_log: pd.DataFrame):
             .sort_values("entries", ascending=False)
         )
         st.dataframe(theme_summary, use_container_width=True, hide_index=True)
+
+
+
+
+# --------------------------------------------------
+# CACEIS VALUE LENS HELPERS
+# --------------------------------------------------
+def derive_value_lens(row: pd.Series) -> str:
+    archetype = str(row.get("valuation_archetype", ""))
+    absence = row.get("absenteeism_risk_score", 0)
+    learning = row.get("learning_future_value_signal", row.get("learning_intensity_score", 0))
+    reliability = row.get("interpretation_confidence", row.get("kpi_reliability_score", 0))
+    contribution = row.get("contribution_signal", row.get("performance_score", 0))
+
+    if pd.notna(reliability) and reliability < 0.4:
+        return "Data reliability / auditability"
+    if "Pressure" in archetype or (pd.notna(absence) and absence >= 0.7):
+        return "Operational continuity and workload sustainability"
+    if pd.notna(learning) and learning < 0.35:
+        return "Future capability and reskilling"
+    if pd.notna(contribution) and contribution >= 0.65:
+        return "Current contribution and knowledge retention"
+    return "Standard workforce monitoring"
+
+def usefulness_answer(role: str) -> pd.DataFrame:
+    rows = {
+        "Employee": [
+            ("What does the data say about me?", "Shows my own contribution, learning, sustainability, and data visibility signals."),
+            ("What should I discuss with my manager?", "Turns signals into questions for development, workload, and invisible contribution."),
+            ("Can I correct missing context?", "Lets me add context, decisions, expected outcomes, and data-correction notes."),
+        ],
+        "Manager": [
+            ("Who may need support first?", "Highlights profiles with pressure, low learning visibility, or low data confidence."),
+            ("What should I do next?", "Suggests experiments such as workload review, targeted training, or data validation."),
+            ("Am I improving team conditions?", "Tracks sustainability, learning, reliability, and archetype distribution over time."),
+        ],
+        "HR": [
+            ("Where are workforce risks concentrated?", "Aggregates continuity, learning, sustainability, and data quality signals by entity."),
+            ("Can we trust the model output?", "Separates value potential from interpretation confidence and flags weak evidence."),
+            ("What policy action is needed?", "Identifies whether the issue is capability, workload, data quality, or governance."),
+        ],
+        "Product Owner": [
+            ("Is the product ready to deploy?", "Checks output readiness, model maturity, missing data, and governance controls."),
+            ("Is the valuation model responsible?", "Monitors proxy logic, interpretation risk, archetype balance, and limitations."),
+            ("What should be built next?", "Maps gaps to future data sources, validation, and production roadmap."),
+        ],
+    }
+    return pd.DataFrame(rows.get(role, []), columns=["Question", "Dashboard answer"])
+
+def show_caceis_value_lens(df: pd.DataFrame, title: str = "CACEIS value lens"):
+    st.subheader(title)
+    if df.empty:
+        st.info("No data available for this value lens.")
+        return
+    work = df.copy()
+    if "caceis_value_lens" not in work.columns:
+        work["caceis_value_lens"] = work.apply(derive_value_lens, axis=1)
+    lens_summary = (
+        work["caceis_value_lens"]
+        .value_counts()
+        .rename_axis("CACEIS question")
+        .reset_index(name="Profiles")
+    )
+    st.dataframe(lens_summary, use_container_width=True, hide_index=True)
+    fig = px.bar(lens_summary, x="CACEIS question", y="Profiles", title="What business question does each signal support?")
+    st.plotly_chart(clean_chart(fig), use_container_width=True)
 
 
 def segment_actions_df() -> pd.DataFrame:
@@ -666,6 +806,8 @@ def show_recommendations(rec_df: pd.DataFrame, title: str = "Recommended Actions
             .rename_axis("recommendation")
             .reset_index(name="profiles")
         )
+        show_caceis_value_lens(employee_value, "CACEIS workforce value lens")
+
         st.subheader("Recommendation summary")
         fig = px.bar(
             action_summary.head(10),
@@ -978,11 +1120,419 @@ else:
     st.stop()
 
 
+
+
+# --------------------------------------------------
+# EMPLOYEE-FACING EXPLANATION HELPERS
+# --------------------------------------------------
+def score_band(value):
+    """Plain-language banding for 0-1 prototype signals."""
+    try:
+        value = float(value)
+    except (TypeError, ValueError):
+        return "Not available"
+    if value >= 0.70:
+        return "High"
+    if value >= 0.40:
+        return "Medium"
+    return "Low"
+
+
+def info_expander(title: str, body: str):
+    """Small clickable info block for score cards. Streamlit metric help tooltips are easy to miss."""
+    with st.expander(f"ℹ️ {title}", expanded=False):
+        st.markdown(body)
+
+
+def signal_text(emp: pd.Series, primary_col: str, fallback_col: str | None = None) -> str:
+    """Return a score with plain-language band for employee-facing display."""
+    value = emp.get(primary_col, None)
+    if pd.isna(value) and fallback_col:
+        value = emp.get(fallback_col, None)
+    return f"{safe_value(pd.Series({primary_col: value}), primary_col)} · {score_band(value)}"
+
+
+def employee_signal_explanation(emp: pd.Series) -> pd.DataFrame:
+    """Visible explanation table for employee-facing signals."""
+    learning = emp.get("learning_future_value_signal", emp.get("learning_intensity_score", None))
+    contribution = emp.get("contribution_signal", emp.get("performance_score", None))
+    sustainability = emp.get("sustainability_signal", None)
+    reliability = emp.get("interpretation_confidence", emp.get("kpi_reliability_score", None))
+    absence = emp.get("absenteeism_risk_score", None)
+
+    return pd.DataFrame([
+        {
+            "Signal": "Development signal",
+            "Your score": safe_value(emp, "learning_future_value_signal") if "learning_future_value_signal" in emp.index else safe_value(emp, "learning_intensity_score"),
+            "Level": score_band(learning),
+            "What it means": "How much visible training/development activity appears in the data. Low does not mean low talent; it may mean training is missing, informal, or not yet recorded.",
+            "Good next question": "What skill or learning opportunity should I prioritize next?",
+        },
+        {
+            "Signal": "Contribution signal",
+            "Your score": safe_value(emp, "contribution_signal") if "contribution_signal" in emp.index else safe_value(emp, "performance_score"),
+            "Level": score_band(contribution),
+            "What it means": "A proxy based mainly on available review/performance information. It should be discussed with concrete examples because reviews can be incomplete or biased.",
+            "Good next question": "Which parts of my work create the most value for my team?",
+        },
+        {
+            "Signal": "Sustainability signal",
+            "Your score": safe_value(emp, "sustainability_signal"),
+            "Level": score_band(sustainability),
+            "What it means": "A continuity signal derived from absence/PTO-risk patterns. Higher usually means lower observed continuity pressure. It is not a wellbeing diagnosis.",
+            "Good next question": "Is my current workload sustainable?",
+        },
+        {
+            "Signal": "Absence / continuity risk",
+            "Your score": safe_value(emp, "absenteeism_risk_score"),
+            "Level": score_band(absence),
+            "What it means": "Higher means more observed absence/continuity pressure in the data. This needs human context before any interpretation.",
+            "Good next question": "Is there context missing behind my absence/PTO pattern?",
+        },
+        {
+            "Signal": "Data visibility",
+            "Your score": safe_value(emp, "interpretation_confidence") if "interpretation_confidence" in emp.index else safe_value(emp, "kpi_reliability_score"),
+            "Level": score_band(reliability),
+            "What it means": "How complete the available data is. Low visibility means the dashboard should not be trusted strongly yet.",
+            "Good next question": "Are my review, training, or HR records complete?",
+        },
+    ])
+
+
+def employee_plain_language_summary(emp: pd.Series) -> dict:
+    """Create a practical employee-facing summary from selected employee data."""
+    learning = emp.get("learning_future_value_signal", emp.get("learning_intensity_score", None))
+    contribution = emp.get("contribution_signal", emp.get("performance_score", None))
+    sustainability = emp.get("sustainability_signal", None)
+    reliability = emp.get("interpretation_confidence", emp.get("kpi_reliability_score", None))
+    absence = emp.get("absenteeism_risk_score", None)
+
+    learning_band = score_band(learning)
+    contribution_band = score_band(contribution)
+    sustainability_band = score_band(sustainability)
+    reliability_band = score_band(reliability)
+    absence_band = score_band(absence)
+
+    if reliability_band == "Low":
+        situation = "The dashboard does not have enough reliable data to say much yet."
+        worry = "Do not over-interpret these results. The main issue is data completeness, not your performance."
+        next_step = "Check whether your training, review, absence/PTO, or HR records are missing or outdated."
+    elif absence_band == "High" or sustainability_band == "Low":
+        situation = "Your data suggests possible workload, recovery, or continuity pressure."
+        worry = "This is not a judgment, but it is worth discussing context before pressure turns into a bigger issue."
+        next_step = "Prepare a conversation about workload, recovery, priorities, or support needs."
+    elif learning_band == "Low" and contribution_band in ["Medium", "High"]:
+        situation = "You appear to have visible contribution, but low recorded development activity."
+        worry = "This is not a problem by itself. It means your next useful conversation is about future growth."
+        next_step = "Identify one training, mentoring, mobility, or upskilling opportunity to discuss with your manager."
+    elif contribution_band == "Low" and learning_band in ["Medium", "High"]:
+        situation = "You have visible learning activity, but it may not yet appear as contribution in the available data."
+        worry = "No immediate conclusion should be drawn. The key is to connect learning to concrete work outcomes."
+        next_step = "Ask how your recent learning can be applied to a project, process, or client deliverable."
+    else:
+        situation = "Your signals look broadly stable based on the available data."
+        worry = "No major red flag appears from the current dashboard view."
+        next_step = "Use your next check-in to confirm priorities, development goals, and any missing context."
+
+    return {
+        "situation": situation,
+        "worry": worry,
+        "next_step": next_step,
+        "manager_questions": [
+            "What skill should I build before my next review?",
+            "Which part of my work creates the most value for the team?",
+            "Is any important work or informal learning missing from the data?",
+            "Is my workload sustainable for the next review cycle?",
+        ],
+    }
+
+
+
+def employee_manager_questions(emp: pd.Series) -> pd.DataFrame:
+    """Generate manager questions from this employee's actual signals instead of hard-coding them."""
+    learning = emp.get("learning_future_value_signal", emp.get("learning_intensity_score", None))
+    contribution = emp.get("contribution_signal", emp.get("performance_score", None))
+    sustainability = emp.get("sustainability_signal", None)
+    reliability = emp.get("interpretation_confidence", emp.get("kpi_reliability_score", None))
+    absence = emp.get("absenteeism_risk_score", None)
+    balance = emp.get("sustainability_balance", None)
+    archetype = str(emp.get("valuation_archetype", emp.get("segment_name", "")))
+
+    rows = []
+
+    def add(priority, theme, question, why):
+        rows.append({
+            "Priority": priority,
+            "Theme": theme,
+            "Question to ask": question,
+            "Why this question appears": why,
+        })
+
+    if pd.notna(reliability) and reliability < 0.5:
+        add(
+            "High",
+            "Data quality",
+            "Are my review, training, absence/PTO, or HR records complete and up to date?",
+            "Your data visibility is low, so the dashboard should not be strongly interpreted yet.",
+        )
+
+    if pd.notna(learning) and learning < 0.3:
+        add(
+            "High",
+            "Development",
+            "Which skill, training, mentoring, or mobility opportunity should I prioritize next?",
+            "Your visible learning/development signal is low compared with the available scale.",
+        )
+        add(
+            "Medium",
+            "Missing context",
+            "Is any informal learning, project-based learning, or on-the-job development missing from the data?",
+            "Low learning can mean missing records, not low effort or low potential.",
+        )
+
+    if pd.notna(contribution) and contribution < 0.4:
+        add(
+            "High",
+            "Contribution clarity",
+            "What concrete outcomes or responsibilities should I focus on to increase my visible contribution?",
+            "Your contribution signal is currently low or unclear in the available data.",
+        )
+    elif pd.notna(contribution) and contribution >= 0.65:
+        add(
+            "Medium",
+            "Contribution leverage",
+            "Which parts of my work create the most value for the team, and how can I protect or grow them?",
+            "Your contribution signal is relatively strong, so the useful question is how to sustain and develop it.",
+        )
+
+    if (pd.notna(absence) and absence >= 0.6) or (pd.notna(sustainability) and sustainability < 0.45) or (pd.notna(balance) and balance < 0):
+        add(
+            "High",
+            "Workload / sustainability",
+            "Is my current workload, recovery rhythm, or prioritization sustainable for the next review cycle?",
+            "Your sustainability or absence/continuity signal suggests this deserves context and discussion.",
+        )
+
+    if "Under-Observed" in archetype or "Low Visibility" in archetype:
+        add(
+            "High",
+            "Visibility",
+            "What important work, training, or contribution is not visible in the current dashboard?",
+            "Your profile appears under-observed, so improving visibility is the first useful step.",
+        )
+
+    if "Future Value Builder" in archetype:
+        add(
+            "Medium",
+            "Applying learning",
+            "How can I apply my learning to a concrete project, process improvement, or client deliverable?",
+            "Your learning signal is stronger than your current contribution signal, so conversion into applied impact is the key topic.",
+        )
+
+    if not rows:
+        add(
+            "Medium",
+            "Next growth step",
+            "What should be my main development or contribution priority before the next review?",
+            "No strong alert appears, so the best use is regular development planning.",
+        )
+        add(
+            "Low",
+            "Context check",
+            "Is there anything important about my work that the dashboard does not capture?",
+            "Even stable signals can miss informal work, collaboration, or context.",
+        )
+
+    priority_order = {"High": 0, "Medium": 1, "Low": 2}
+    return pd.DataFrame(rows).drop_duplicates("Question to ask").sort_values(
+        by="Priority",
+        key=lambda s: s.map(priority_order).fillna(9),
+    )
+
+def show_employee_score_dictionary():
+    st.subheader("Score dictionary")
+    st.markdown("These explanations are always visible because hover tooltips are easy to miss.")
+    st.dataframe(
+        pd.DataFrame([
+            {"Score": "Development signal", "Meaning": "Visible training and learning activity.", "Important caution": "Low can mean missing or informal learning, not low ability."},
+            {"Score": "Contribution signal", "Meaning": "Available review/performance-related signal.", "Important caution": "Reviews can be incomplete or biased; use examples and manager context."},
+            {"Score": "Sustainability signal", "Meaning": "Continuity signal based on absence/PTO-risk patterns. Higher is generally better.", "Important caution": "This is not a health, burnout, or wellbeing diagnosis."},
+            {"Score": "Learning vs pressure balance", "Meaning": "Learning intensity minus absenteeism risk.", "Important caution": "Positive = learning signal is stronger than risk. Negative = risk is stronger than visible learning."},
+            {"Score": "Data visibility", "Meaning": "How complete the available records are.", "Important caution": "Low visibility means do not make strong conclusions."},
+        ]),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+
+
+def show_manager_score_dictionary():
+    st.subheader("Manager score dictionary")
+    st.markdown("These explanations are visible because hover tooltips are easy to miss during a demo.")
+    st.dataframe(
+        pd.DataFrame([
+            {
+                "Score / box": "Team size",
+                "What it tells a manager": "How many employees are visible in this manager workspace.",
+                "How to use it": "Use it as context only; small teams can make averages unstable.",
+            },
+            {
+                "Score / box": "Avg sustainable value potential",
+                "What it tells a manager": "A combined team signal from contribution, learning, sustainability, and progression.",
+                "How to use it": "Use it to identify team-level patterns, not to rank employees.",
+            },
+            {
+                "Score / box": "Avg future value signal",
+                "What it tells a manager": "Average visible learning and development activity across the team.",
+                "How to use it": "Low values should trigger questions about training access, informal learning, and development planning.",
+            },
+            {
+                "Score / box": "Avg interpretation confidence",
+                "What it tells a manager": "How complete/reliable the available team data is.",
+                "How to use it": "If this is low, validate data before acting on the signals.",
+            },
+            {
+                "Score / box": "High continuity-risk profiles",
+                "What it tells a manager": "Number of team members with elevated absence/continuity risk labels.",
+                "How to use it": "Start workload, staffing, recovery, or context conversations. Do not treat it as blame.",
+            },
+            {
+                "Score / box": "Learning vs pressure balance",
+                "What it tells a manager": "Learning intensity minus absenteeism risk.",
+                "How to use it": "Negative values suggest pressure/risk is stronger than visible development activity.",
+            },
+        ]),
+        use_container_width=True,
+        hide_index=True,
+    )
+
+
+def manager_team_plain_language_summary(team_df: pd.DataFrame) -> dict:
+    """Generate a practical manager-facing team summary from team-level signals."""
+    if team_df.empty:
+        return {
+            "situation": "No team data is available.",
+            "risk": "No interpretation is possible.",
+            "next_step": "Check the manager-to-department mapping and available data files.",
+        }
+
+    avg_learning = pd.to_numeric(team_df.get("learning_future_value_signal", team_df.get("learning_intensity_score", pd.Series(dtype=float))), errors="coerce").mean()
+    avg_contribution = pd.to_numeric(team_df.get("contribution_signal", team_df.get("performance_score", pd.Series(dtype=float))), errors="coerce").mean()
+    avg_sustainability = pd.to_numeric(team_df.get("sustainability_signal", pd.Series(dtype=float)), errors="coerce").mean()
+    avg_confidence = pd.to_numeric(team_df.get("interpretation_confidence", team_df.get("kpi_reliability_score", pd.Series(dtype=float))), errors="coerce").mean()
+    high_risk_share = (team_df.get("risk_prediction_label", pd.Series(dtype=str)).astype(str).eq("High")).mean() if "risk_prediction_label" in team_df.columns else 0
+    low_data_share = pd.to_numeric(team_df.get("low_data_flag", pd.Series(False, index=team_df.index)), errors="coerce").fillna(0).astype(bool).mean() if "low_data_flag" in team_df.columns else 0
+
+    if pd.notna(avg_confidence) and avg_confidence < 0.5:
+        situation = "Your first management issue is data quality, not performance. The team signals are not reliable enough for strong interpretation."
+        risk = "Risk of misreading the team because some records are missing or incomplete."
+        next_step = "Validate HR, training, review, and absence records before drawing conclusions."
+    elif high_risk_share >= 0.25 or (pd.notna(avg_sustainability) and avg_sustainability < 0.45):
+        situation = "The team may be delivering under pressure. The main management topic is sustainability and continuity."
+        risk = "If ignored, this can become absence, disengagement, operational disruption, or loss of knowledge."
+        next_step = "Review workload distribution, deadlines, recovery capacity, and whether support is needed."
+    elif pd.notna(avg_learning) and avg_learning < 0.35 and pd.notna(avg_contribution) and avg_contribution >= 0.5:
+        situation = "The team appears to contribute, but visible learning/development activity is low."
+        risk = "Current delivery may be okay, but future capability could weaken if skills are not refreshed."
+        next_step = "Identify one training, mentoring, or upskilling priority for the team."
+    elif pd.notna(avg_learning) and avg_learning >= 0.6 and pd.notna(avg_contribution) and avg_contribution < 0.5:
+        situation = "The team shows learning activity, but it may not yet be converting into visible contribution."
+        risk = "Training investment may not translate into operational value unless applied to real work."
+        next_step = "Connect learning to concrete projects, process improvements, or client deliverables."
+    elif low_data_share >= 0.25:
+        situation = "A significant part of the team is under-observed in the available data."
+        risk = "Important work, informal learning, or context may be invisible."
+        next_step = "Use manager notes and employee context inputs to fill the interpretation gap."
+    else:
+        situation = "The team signals look broadly stable based on the available data."
+        risk = "No single major alert dominates the dashboard."
+        next_step = "Use the dashboard to prepare regular check-ins and monitor changes over time."
+
+    return {"situation": situation, "risk": risk, "next_step": next_step}
+
+
+def manager_dynamic_questions(team_df: pd.DataFrame) -> pd.DataFrame:
+    """Generate manager questions based on the actual team signals instead of hard-coding generic bullets."""
+    rows = []
+
+    def add(priority, theme, question, why):
+        rows.append({
+            "Priority": priority,
+            "Theme": theme,
+            "Manager question": question,
+            "Why this appears": why,
+        })
+
+    if team_df.empty:
+        add("High", "Data availability", "Why is no team data mapped to this manager?", "The manager workspace has no employee rows.")
+        return pd.DataFrame(rows)
+
+    avg_learning = pd.to_numeric(team_df.get("learning_future_value_signal", team_df.get("learning_intensity_score", pd.Series(dtype=float))), errors="coerce").mean()
+    avg_contribution = pd.to_numeric(team_df.get("contribution_signal", team_df.get("performance_score", pd.Series(dtype=float))), errors="coerce").mean()
+    avg_sustainability = pd.to_numeric(team_df.get("sustainability_signal", pd.Series(dtype=float)), errors="coerce").mean()
+    avg_confidence = pd.to_numeric(team_df.get("interpretation_confidence", team_df.get("kpi_reliability_score", pd.Series(dtype=float))), errors="coerce").mean()
+    avg_balance = pd.to_numeric(team_df.get("sustainability_balance", pd.Series(dtype=float)), errors="coerce").mean()
+    high_risk_count = int(team_df.get("risk_prediction_label", pd.Series(dtype=str)).astype(str).eq("High").sum()) if "risk_prediction_label" in team_df.columns else 0
+    low_data_count = int(pd.to_numeric(team_df.get("low_data_flag", pd.Series(False, index=team_df.index)), errors="coerce").fillna(0).astype(bool).sum()) if "low_data_flag" in team_df.columns else 0
+
+    if pd.notna(avg_confidence) and avg_confidence < 0.5:
+        add("High", "Data reliability", "Which team records are missing or unreliable before I act on these signals?", "Average interpretation confidence is low.")
+    if low_data_count > 0:
+        add("High", "Visibility", "Which employees or activities are under-observed in the current data?", f"{low_data_count} team profile(s) have low-data flags.")
+    if high_risk_count > 0:
+        add("High", "Continuity / workload", "Which workload, deadline, staffing, or recovery factors could explain the high-risk profiles?", f"{high_risk_count} team profile(s) show high continuity-risk labels.")
+    if pd.notna(avg_sustainability) and avg_sustainability < 0.45:
+        add("High", "Sustainability", "Is the team creating value in a way that can be sustained next quarter?", "Average sustainability signal is low.")
+    if pd.notna(avg_balance) and avg_balance < 0:
+        add("High", "Learning vs pressure", "Is pressure stronger than development investment for this team?", "Average learning-vs-pressure balance is negative.")
+    if pd.notna(avg_learning) and avg_learning < 0.35:
+        add("Medium", "Development", "Does the team have enough access to training, mentoring, or stretch assignments?", "Average future value/development signal is low.")
+    if pd.notna(avg_contribution) and avg_contribution < 0.45:
+        add("Medium", "Contribution clarity", "Are team priorities and expected outcomes clear enough?", "Average contribution signal is low or unclear.")
+    if pd.notna(avg_learning) and avg_learning >= 0.6 and pd.notna(avg_contribution) and avg_contribution < 0.5:
+        add("Medium", "Learning conversion", "How can recent learning be converted into concrete process or client-delivery improvements?", "Learning signal is stronger than contribution signal.")
+
+    if "valuation_archetype" in team_df.columns:
+        archetypes = set(team_df["valuation_archetype"].dropna().astype(str))
+        if any("Value Under Pressure" in a for a in archetypes):
+            add("High", "Value under pressure", "Who may be contributing strongly but under unsustainable pressure?", "At least one team member is classified as Value Under Pressure.")
+        if any("Strong Contributor / Low Development" in a for a in archetypes):
+            add("Medium", "Future capability", "Which strong contributors need targeted development to protect future value?", "At least one team member has strong contribution but low development signal.")
+        if any("Under-Observed" in a for a in archetypes):
+            add("High", "Data/context", "What context should I add before HR interprets these profiles?", "At least one profile is under-observed.")
+
+    if not rows:
+        add("Medium", "Regular management", "What is the team’s main development or delivery priority before the next review?", "No major alert dominates, so use the tool for proactive check-ins.")
+        add("Low", "Context", "What important team work is not captured by the current structured data?", "Dashboards can miss informal work, collaboration, and client support.")
+
+    priority_order = {"High": 0, "Medium": 1, "Low": 2}
+    return pd.DataFrame(rows).drop_duplicates("Manager question").sort_values(
+        by="Priority",
+        key=lambda s: s.map(priority_order).fillna(9),
+    )
+
+
+def manager_employee_coaching_questions(emp: pd.Series) -> pd.DataFrame:
+    """Generate coaching questions for one selected employee in the manager drill-down."""
+    # Reuse the employee question generator but adjust labels to manager language.
+    q = employee_manager_questions(emp).copy()
+    if q.empty:
+        return q
+    q = q.rename(columns={"Question to ask": "Coaching question", "Why this question appears": "Why this appears"})
+    q["Coaching question"] = q["Coaching question"].str.replace("Are my", "Are this employee's", regex=False)
+    q["Coaching question"] = q["Coaching question"].str.replace("What skill should I", "What skill should this employee", regex=False)
+    q["Coaching question"] = q["Coaching question"].str.replace("Which part of my work", "Which part of this employee's work", regex=False)
+    q["Coaching question"] = q["Coaching question"].str.replace("Is my", "Is this employee's", regex=False)
+    q["Coaching question"] = q["Coaching question"].str.replace("How can I", "How can this employee", regex=False)
+    q["Coaching question"] = q["Coaching question"].str.replace("What concrete outcomes or responsibilities should I", "What concrete outcomes or responsibilities should this employee", regex=False)
+    return q
+
+
 # --------------------------------------------------
 # EMPLOYEE VIEW
 # --------------------------------------------------
 if role == "Employee":
-    tab1, tab2, tab3 = st.tabs(["My Value Dashboard", "My Development", "My Context & Questions"])
+    tab1, tab2, tab3, tab4 = st.tabs(["My Situation", "My Next Steps", "Add Context", "Help & FAQ"])
 
     selected_employee = user["id"]
     employee_match = employee_value[employee_value["display_employee"] == selected_employee]
@@ -994,36 +1544,51 @@ if role == "Employee":
         emp = employee_match.iloc[0]
 
     with tab1:
-        st.header("My Personal Value Dashboard")
+        st.header("My Situation")
+        st.markdown("This page translates your own signals into plain-language guidance. Scores are not judgments; they are prompts for a conversation.")
 
         if emp is None:
             st.warning("No employee profile found in the integrated table.")
         else:
             col1, col2, col3, col4 = st.columns(4)
 
-            col1.metric(
-                "Learning signal",
-                safe_value(emp, "learning_intensity_score"),
-                help="Visible training and development activity. This is a proxy for learning investment, not a measure of talent."
-            )
+            with col1:
+                st.metric("My development signal", safe_value(emp, "learning_future_value_signal"))
+                info_expander(
+                    "What is this?",
+                    "Visible training and development activity found in the data. A low score can mean formal training is low, informal learning is not recorded, or the data is incomplete. It is not a measure of talent."
+                )
 
-            col2.metric(
-                "Annual review signal",
-                safe_value(emp, "performance_score"),
-                help="Available annual review or performance information. Reviews should be interpreted with context because they can be incomplete or biased."
-            )
+            with col2:
+                st.metric("My contribution signal", safe_value(emp, "contribution_signal"))
+                info_expander(
+                    "What is this?",
+                    "A proxy based mainly on available annual review/performance information. It should be discussed with concrete examples because reviews can be subjective, incomplete, or biased."
+                )
 
-            col3.metric(
-                "PTO / absence balance",
-                safe_value(emp, "absenteeism_risk_score"),
-                help="Absence/PTO-related pattern used as a continuity and wellbeing signal. This is not a judgment."
-            )
+            with col3:
+                st.metric("My sustainability signal", safe_value(emp, "sustainability_signal"))
+                info_expander(
+                    "What is this?",
+                    "A continuity signal based on absence/PTO-risk patterns. Higher usually means lower observed continuity pressure. It is not a health, burnout, or wellbeing diagnosis."
+                )
 
-            col4.metric(
-                "Data reliability",
-                safe_value(emp, "kpi_reliability_score"),
-                help="How complete and reliable the available data is. Low reliability means insights should be interpreted carefully."
-            )
+            with col4:
+                st.metric("My data visibility", safe_value(emp, "interpretation_confidence"))
+                info_expander(
+                    "What is this?",
+                    "How complete and reliable the available records are. If this is low, the dashboard should not be used to make strong conclusions about you."
+                )
+
+            summary = employee_plain_language_summary(emp)
+
+            st.subheader("What this means")
+            soft_card("Current situation", summary["situation"])
+            soft_card("Should I worry?", summary["worry"])
+            soft_card("Recommended next step", summary["next_step"])
+
+            with st.expander("See exactly what each score means", expanded=True):
+                st.dataframe(employee_signal_explanation(emp), use_container_width=True, hide_index=True)
 
             st.subheader("My profile summary")
 
@@ -1034,38 +1599,44 @@ if role == "Employee":
                     "My team / entity",
                     str(safe_value(emp, department_col)) if department_col else "Not available"
                 )
+                info_expander("Why show this?", "Your team/entity gives context. Scores should be compared and discussed within role and team context, not in isolation.")
 
             with summary_col2:
                 soft_card(
-                    "My current profile",
-                    str(safe_value(emp, "segment_name"))
+                    "My current situation",
+                    str(safe_value(emp, "valuation_archetype"))
                 )
+                info_expander("What does this label mean?", "This is a plain grouping used to guide conversation. It is not a ranking, grade, or HR decision.")
 
             with summary_col3:
                 soft_card(
-                    "Current continuity label",
-                    str(safe_value(emp, "risk_prediction_label"))
+                    "Question to discuss",
+                    str(safe_value(emp, "blue_line_question"))
                 )
+                info_expander("Why this question?", "The question points to the next human conversation: what context is missing, what should be developed, or what support may be useful.")
 
             value_col1, value_col2, value_col3 = st.columns(3)
 
             with value_col1:
                 soft_card(
-                    "Value contribution proxy",
-                    str(safe_value(emp, "human_capital_value_proxy"))
+                    "Overall signal",
+                    str(safe_value(emp, "sustainable_value_potential"))
                 )
+                info_expander("What is this?", "A combined prototype signal from contribution, learning, sustainability, and progression. It is kept visible for transparency, but it should not be read as your personal value.")
 
             with value_col2:
                 soft_card(
-                    "Reliability-adjusted value",
-                    str(safe_value(emp, "reliability_adjusted_value_proxy"))
+                    "Confidence-adjusted signal",
+                    str(safe_value(emp, "reliability_adjusted_value_potential"))
                 )
+                info_expander("What is this?", "The overall signal reduced when data visibility is incomplete. If the data is weaker, the interpretation should be weaker too.")
 
             with value_col3:
                 soft_card(
-                    "Sustainability balance",
+                    "Learning vs pressure balance",
                     str(safe_value(emp, "sustainability_balance"))
                 )
+                info_expander("What is this?", "Formula: learning intensity score minus absenteeism risk score. Positive means visible learning is stronger than continuity pressure. Negative means continuity pressure is stronger than visible learning. It is not a diagnosis.")
 
             st.subheader("Recommended focus")
 
@@ -1141,12 +1712,19 @@ if role == "Employee":
                 )
 
     with tab2:
-        st.header("My Development Plan")
+        st.header("My Next Steps")
 
         if emp is not None:
             st.markdown(
-                "This view translates your signals into practical questions and next steps for your next review cycle."
+                "This page combines your employee-specific scores with general coaching guidance. The scores update by employee; the action plan is a reusable checklist."
             )
+            with st.expander("Which parts are employee-specific?", expanded=True):
+                st.markdown(
+                    """
+                    **Employee-specific:** the numeric scores, current situation, recommended next step, data visibility, and any saved context.  
+                    **General guidance:** the checklist and example questions are reusable prompts for a review conversation.
+                    """
+                )
 
             dev_col1, dev_col2, dev_col3 = st.columns(3)
 
@@ -1155,18 +1733,28 @@ if role == "Employee":
                     "Current development signal",
                     f"Learning score: {safe_value(emp, 'learning_intensity_score')}"
                 )
+                info_expander("What should I do with this?", "Use this to check whether your formal learning and training activity is visible. If it is low but you learned informally, add context or discuss it in your review.")
 
             with dev_col2:
                 soft_card(
                     "Review preparation",
                     f"Annual review signal: {safe_value(emp, 'performance_score')}"
                 )
+                info_expander("What should I do with this?", "Use this as a prompt to prepare examples of your work. It should not replace the actual review conversation.")
 
             with dev_col3:
                 soft_card(
                     "Sustainability check",
-                    f"Balance score: {safe_value(emp, 'sustainability_balance')}"
+                    f"Learning vs pressure balance: {safe_value(emp, 'sustainability_balance')}"
                 )
+                info_expander("What should I do with this?", "Use this to discuss whether your current workload and recovery rhythm are sustainable. A negative score means this deserves context, not blame.")
+
+            note(
+                "<b>What is the sustainability balance?</b> In this prototype it equals <b>learning intensity score minus absenteeism risk score</b>. "
+                "A negative value means observed absence/continuity pressure is higher than visible learning activity. "
+                "It is not a health diagnosis and should always be discussed with context.",
+                "governance",
+            )
 
             st.subheader("Recommended next step")
             st.info(employee_focus)
@@ -1201,26 +1789,18 @@ if role == "Employee":
             st.dataframe(action_plan, use_container_width=True, hide_index=True)
 
             st.subheader("Questions for my manager")
-
-            q1, q2 = st.columns(2)
-
-            with q1:
+            st.markdown(
+                "These questions are generated from this employee profile's actual signals, not hard-coded. "
+                "Use them to prepare a focused review conversation."
+            )
+            manager_questions_df = employee_manager_questions(emp)
+            st.dataframe(manager_questions_df, use_container_width=True, hide_index=True)
+            with st.expander("ℹ️ How are these questions generated?", expanded=False):
                 st.markdown(
                     """
-                    **Development**
-                    - What skills should I build before my next review?
-                    - Which training would be most useful for my role?
-                    - Are there mentoring or mobility opportunities?
-                    """
-                )
-
-            with q2:
-                st.markdown(
-                    """
-                    **Value and sustainability**
-                    - Which parts of my contribution create the most value?
-                    - Is any important work invisible in the current data?
-                    - Is my workload sustainable over the next review cycle?
+                    The dashboard checks this employee's data visibility, learning/development signal, contribution signal, 
+                    absence/continuity risk, sustainability signal, sustainability balance, and valuation archetype. 
+                    It then selects the most relevant questions for the manager conversation.
                     """
                 )
 
@@ -1232,10 +1812,10 @@ if role == "Employee":
 
 
     with tab3:
-        st.header("My Context & Questions")
+        st.header("Add Context to My Profile")
         st.markdown(
-            "This is the V4 layer: employees can add context, ask questions, and log decisions or experiments. "
-            "The goal is to capture the human explanation behind KPI signals."
+            "Use this page when the dashboard is missing something important: informal learning, invisible work, workload pressure, a data issue, or a question for your manager/HR. "
+            "This context helps explain signals; it is not used as a score."
         )
 
         if emp is None:
@@ -1305,11 +1885,63 @@ if role == "Employee":
 
             show_context_summary(my_log, pd.DataFrame())
 
+
+
+    with tab4:
+        st.header("Help & FAQ")
+        st.markdown("A short guide for using the employee dashboard without over-reading the numbers.")
+
+        faq_items = [
+            (
+                "What is the point of this tool for me?",
+                "It helps you prepare better conversations: what development to ask for, whether your data is complete, what context is missing, and whether workload or recovery should be discussed."
+            ),
+            (
+                "Are these scores my evaluation?",
+                "No. They are prototype signals from available HR, training, review, and absence/PTO data. They should start a conversation, not replace one."
+            ),
+            (
+                "What should I look at first?",
+                "Start with the plain-language boxes under 'What this means'. Then check data visibility. Only then look at individual scores."
+            ),
+            (
+                "What does a low development signal mean?",
+                "It means little formal learning is visible in the available data. It could also mean informal learning is missing from records, so you should add context or ask about training options."
+            ),
+            (
+                "What does sustainability mean here?",
+                "It is a continuity/workload proxy, not a health diagnosis. The balance shown in the dashboard is learning intensity minus absence/continuity risk."
+            ),
+            (
+                "When should I use Add Context?",
+                "Use it when the dashboard misses something important: invisible work, informal training, workload pressure, data errors, or a question for HR/manager."
+            ),
+        ]
+
+        for question, answer in faq_items:
+            with st.expander(f"ℹ️ {question}", expanded=False):
+                st.markdown(answer)
+
+        st.subheader("Score dictionary")
+        show_employee_score_dictionary()
+
+        note(
+            "<b>Best use:</b> treat this as a preparation tool for a check-in: what is accurate, what is missing, and what should I develop next?",
+            "governance",
+        )
+
 # --------------------------------------------------
 # MANAGER VIEW
 # --------------------------------------------------
 elif role == "Manager":
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(["Team Dashboard", "Employee Drill-Down", "Team Signals", "Manager Notes", "Action Plan"])
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+        "Team Dashboard",
+        "Employee Drill-Down",
+        "Team Signals",
+        "Manager Notes",
+        "Action Plan",
+        "Help & FAQ",
+    ])
 
     if department_col:
         selected_department = user["department"]
@@ -1328,11 +1960,36 @@ elif role == "Manager":
 
     with tab1:
         st.header(f"Hello Manager of {selected_department}")
+        st.subheader("What this helps me answer")
+        st.dataframe(usefulness_answer("Manager"), use_container_width=True, hide_index=True)
 
         st.markdown(
             "This dashboard summarizes your team’s value signals, learning visibility, reliability, and continuity risks. "
             "Use it to support coaching conversations and team development decisions."
         )
+
+        team_summary = manager_team_plain_language_summary(team)
+        st.subheader("Manager interpretation")
+        s1, s2, s3 = st.columns(3)
+        with s1:
+            soft_card("What the dashboard sees", team_summary["situation"])
+            with st.expander("ℹ️ Why this appears", expanded=False):
+                st.markdown("This is generated from team averages for learning, contribution, sustainability, interpretation confidence, high-risk labels, and low-data flags.")
+        with s2:
+            soft_card("Main management risk", team_summary["risk"])
+            with st.expander("ℹ️ How to use this", expanded=False):
+                st.markdown("Use this as a prompt for context checks. It is not an automatic diagnosis of team performance or wellbeing.")
+        with s3:
+            soft_card("Recommended next step", team_summary["next_step"])
+            with st.expander("ℹ️ What to do next", expanded=False):
+                st.markdown("Turn the signal into a concrete conversation or experiment: validate data, review workload, identify training access, or add missing context.")
+
+        st.subheader("Team-level questions to investigate")
+        st.dataframe(manager_dynamic_questions(team), use_container_width=True, hide_index=True)
+        with st.expander("ℹ️ How these questions are generated", expanded=False):
+            st.markdown(
+                "The questions are generated from the team’s actual signals: data reliability, learning/development signal, contribution signal, sustainability signal, high-risk labels, low-data flags, and valuation archetypes."
+            )
 
         col1, col2, col3, col4 = st.columns(4)
 
@@ -1343,22 +2000,25 @@ elif role == "Manager":
         )
 
         col2.metric(
-            "Avg value proxy",
-            safe_mean(team, "human_capital_value_proxy"),
+            "Avg sustainable value potential",
+            safe_mean(team, "sustainable_value_potential"),
             help="Average bottom-up value proxy for the team. This is not a financial valuation; it combines available human capital signals."
         )
 
         col3.metric(
-            "Avg learning signal",
-            safe_mean(team, "learning_intensity_score"),
+            "Avg future value signal",
+            safe_mean(team, "learning_future_value_signal"),
             help="Average visible training and development activity across the team."
         )
 
         col4.metric(
-            "Avg data reliability",
-            safe_mean(team, "kpi_reliability_score"),
+            "Avg interpretation confidence",
+            safe_mean(team, "interpretation_confidence"),
             help="Average confidence in the available data. Lower reliability means signals should be interpreted carefully."
         )
+
+        with st.expander("ℹ️ What do these team scores mean?", expanded=False):
+            show_manager_score_dictionary()
 
         st.subheader("Team profile snapshot")
 
@@ -1397,6 +2057,13 @@ elif role == "Manager":
                 str(low_data_count)
             )
 
+        with st.expander("ℹ️ How to read the team snapshot", expanded=False):
+            st.markdown(
+                "**Main team profile** shows the most common AI segment in your team. "
+                "**High continuity-risk profiles** indicates how many employees may need workload, recovery, or context review. "
+                "**Low-data profiles** indicates where the dashboard may be missing important records or context."
+            )
+
         st.subheader("Team segment distribution")
 
         if "segment_name" in team.columns:
@@ -1417,6 +2084,25 @@ elif role == "Manager":
             st.plotly_chart(clean_chart(fig), use_container_width=True)
 
             st.dataframe(seg_counts, use_container_width=True, hide_index=True)
+
+        st.subheader("Team Blue-Line valuation archetypes")
+        if "valuation_archetype" in team.columns:
+            team_archetypes = (
+                team["valuation_archetype"]
+                .value_counts()
+                .rename_axis("Valuation archetype")
+                .reset_index(name="Employees")
+            )
+            fig = px.bar(
+                team_archetypes,
+                x="Valuation archetype",
+                y="Employees",
+                title="Team Blue-Line valuation archetypes",
+            )
+            st.plotly_chart(clean_chart(fig), use_container_width=True)
+            st.dataframe(team_archetypes, use_container_width=True, hide_index=True)
+
+        show_caceis_value_lens(team, "Team CACEIS value lens")
 
         note(
             "<b>How to use this view:</b> read team signals as prompts for support and development. "
@@ -1441,19 +2127,44 @@ elif role == "Manager":
             employee_detail = team[team["display_employee"] == selected_team_employee].iloc[0]
 
             c1, c2, c3, c4 = st.columns(4)
-            c1.metric("Value proxy", safe_value(employee_detail, "human_capital_value_proxy"))
-            c2.metric("Learning", safe_value(employee_detail, "learning_intensity_score"))
-            c3.metric("Continuity risk", safe_value(employee_detail, "absenteeism_risk_score"))
-            c4.metric("Reliability", safe_value(employee_detail, "kpi_reliability_score"))
+            c1.metric("Contribution signal", safe_value(employee_detail, "contribution_signal") if "contribution_signal" in employee_detail.index else safe_value(employee_detail, "performance_score"))
+            c2.metric("Development signal", safe_value(employee_detail, "learning_future_value_signal") if "learning_future_value_signal" in employee_detail.index else safe_value(employee_detail, "learning_intensity_score"))
+            c3.metric("Absence / continuity risk", safe_value(employee_detail, "absenteeism_risk_score"))
+            c4.metric("Data confidence", safe_value(employee_detail, "interpretation_confidence") if "interpretation_confidence" in employee_detail.index else safe_value(employee_detail, "kpi_reliability_score"))
+
+            with st.expander("ℹ️ What do these employee drill-down scores mean?", expanded=False):
+                st.dataframe(
+                    pd.DataFrame([
+                        {"Score": "Contribution signal", "Meaning": "Available review/performance-related signal.", "Manager use": "Ask for examples and context before interpreting."},
+                        {"Score": "Development signal", "Meaning": "Visible learning and training activity.", "Manager use": "Check training access, informal learning, and development plan."},
+                        {"Score": "Absence / continuity risk", "Meaning": "Absence/PTO-related continuity proxy.", "Manager use": "Discuss workload and context; do not treat it as blame."},
+                        {"Score": "Data confidence", "Meaning": "Completeness/reliability of available records.", "Manager use": "Low confidence means validate records before acting."},
+                    ]),
+                    use_container_width=True,
+                    hide_index=True,
+                )
 
             st.subheader("Profile interpretation")
             p1, p2, p3 = st.columns(3)
             with p1:
-                soft_card("Segment", str(safe_value(employee_detail, "segment_name")))
+                soft_card("Current situation", str(safe_value(employee_detail, "valuation_archetype")) if "valuation_archetype" in employee_detail.index else str(safe_value(employee_detail, "segment_name")))
+                with st.expander("ℹ️ What this means", expanded=False):
+                    st.markdown("This is an interpretation category, not a ranking. It helps decide what kind of conversation or support may be useful.")
             with p2:
-                soft_card("Risk label", str(safe_value(employee_detail, "risk_prediction_label")))
+                soft_card("Continuity label", str(safe_value(employee_detail, "risk_prediction_label")))
+                with st.expander("ℹ️ What this means", expanded=False):
+                    st.markdown("This label is based on absence/continuity patterns. It should trigger context review, not conclusions.")
             with p3:
-                soft_card("Recommended action", str(safe_value(employee_detail, "recommended_action")))
+                soft_card("Recommended manager experiment", str(safe_value(employee_detail, "recommended_action")))
+                with st.expander("ℹ️ What this means", expanded=False):
+                    st.markdown("Treat this as a small management experiment or coaching prompt. Validate context with the employee first.")
+
+            st.subheader("Coaching questions generated from this employee's data")
+            st.dataframe(manager_employee_coaching_questions(employee_detail), use_container_width=True, hide_index=True)
+            with st.expander("ℹ️ How these coaching questions are generated", expanded=False):
+                st.markdown(
+                    "Questions are generated from this employee's visible development, contribution, absence/continuity risk, sustainability, data confidence, and valuation archetype."
+                )
 
             employee_log = load_log("employee_context_log.csv")
             manager_log = load_log("manager_context_log.csv")
@@ -1550,6 +2261,12 @@ elif role == "Manager":
             "This view helps identify where the team may need support: workload balance, learning access, data reliability, or coaching attention."
         )
 
+        with st.expander("ℹ️ How to use Team Signals", expanded=False):
+            st.markdown(
+                "Start with the distributions, then inspect the coaching list. "
+                "A high-risk or negative balance signal should lead to a conversation about workload, deadlines, support, or missing context — not automatic judgment."
+            )
+
         signal_col1, signal_col2 = st.columns(2)
 
         with signal_col1:
@@ -1577,7 +2294,7 @@ elif role == "Manager":
                     x="sustainability_balance",
                     nbins=25,
                     title="Sustainability balance distribution",
-                    labels={"sustainability_balance": "Sustainability balance"},
+                    labels={"sustainability_balance": "Learning vs pressure balance"},
                 )
                 st.plotly_chart(clean_chart(fig), use_container_width=True)
 
@@ -1621,28 +2338,20 @@ elif role == "Manager":
             "This section translates team signals into practical management actions."
         )
 
-        st.subheader("Recommended management actions by team profile")
+        with st.expander("ℹ️ How this action plan is generated", expanded=False):
+            st.markdown(
+                "The first table is generated from your team’s actual signals. The second table summarizes recommendation outputs when available. "
+                "Actions should be treated as experiments: try a support action, observe whether signals improve, and add context."
+            )
 
-        action_plan = pd.DataFrame(
-            [
-                {
-                    "Team signal": "Low information / low learning",
-                    "What it may mean": "Some employees have limited visible training, review, or contribution data.",
-                    "Manager action": "Check whether work, training, or development activity is being captured correctly.",
-                },
-                {
-                    "Team signal": "High performers / low development",
-                    "What it may mean": "Strong contribution but limited visible learning investment.",
-                    "Manager action": "Protect performance while offering targeted training, mentoring, or mobility options.",
-                },
-                {
-                    "Team signal": "Engaged but at risk",
-                    "What it may mean": "Strong activity combined with possible workload or continuity pressure.",
-                    "Manager action": "Review workload, recovery balance, and support needs before pressure becomes attrition or absence.",
-                },
-            ]
+        st.subheader("Dynamic management questions and experiments")
+        dynamic_manager_questions = manager_dynamic_questions(team)
+        action_plan = dynamic_manager_questions.rename(
+            columns={
+                "Manager question": "Management question / experiment",
+                "Why this appears": "Signal behind it",
+            }
         )
-
         st.dataframe(action_plan, use_container_width=True, hide_index=True)
 
         st.subheader("Team-level recommendation summary")
@@ -1694,14 +2403,74 @@ elif role == "Manager":
             "governance",
         )
 
+    with tab6:
+        st.header("Manager Help & FAQ")
+        st.markdown("Use this tab when presenting the manager view or when a manager asks what to do with the signals.")
+
+        manager_faq_items = [
+            (
+                "What is the manager supposed to understand first?",
+                "Start with the plain-language Manager interpretation on the Team Dashboard. It tells you whether the main topic is data quality, workload sustainability, development, learning conversion, or regular monitoring."
+            ),
+            (
+                "Are employees being ranked?",
+                "No. The manager view should not be used as a ranking tool. It shows coaching and context signals to help managers support the team."
+            ),
+            (
+                "What should I do with a high continuity-risk profile?",
+                "Treat it as a prompt to ask about workload, recovery, staffing, deadlines, role constraints, or missing context. Do not treat it as employee fault."
+            ),
+            (
+                "What should I do with a low development signal?",
+                "Check whether the employee had access to training, mentoring, mobility, or project-based learning. Also check whether informal learning is missing from records."
+            ),
+            (
+                "What does interpretation confidence mean?",
+                "It tells you whether the available records are complete enough to interpret. Low confidence means validate the data before making decisions."
+            ),
+            (
+                "How should manager notes be used?",
+                "Use notes to add context that structured data misses: invisible work, peak workload, data errors, training needs, support needs, or recognition."
+            ),
+            (
+                "What is the real added value for a manager?",
+                "It helps turn scattered HR signals into concrete coaching questions and small management experiments: validate data, rebalance work, improve training access, and monitor whether conditions improve."
+            ),
+        ]
+
+        for question, answer in manager_faq_items:
+            with st.expander(f"ℹ️ {question}", expanded=False):
+                st.markdown(answer)
+
+        show_manager_score_dictionary()
+
+        st.subheader("Manager workflow")
+        st.dataframe(
+            pd.DataFrame([
+                {"Step": "1. Read the interpretation", "Manager action": "Identify whether the main issue is data quality, workload, development, or monitoring."},
+                {"Step": "2. Check confidence", "Manager action": "If data confidence is low, validate records before interpreting."},
+                {"Step": "3. Review team questions", "Manager action": "Use generated questions to prepare team or individual check-ins."},
+                {"Step": "4. Add context", "Manager action": "Use Manager Notes when structured data misses important information."},
+                {"Step": "5. Run a small experiment", "Manager action": "Try a workload, training, mentoring, or data-quality action and monitor changes."},
+            ]),
+            use_container_width=True,
+            hide_index=True,
+        )
+
+        note(
+            "<b>Manager principle:</b> the dashboard should help managers improve the work system around people — not mechanically evaluate people.",
+            "governance",
+        )
+
 
 # --------------------------------------------------
 # HR VIEW
 # --------------------------------------------------
 elif role == "HR":
-    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs(
         [
             "Action Center",
+            "Blue-Line Valuation",
             "Workforce Explorer",
             "Employee / Team Drill-Down",
             "AI Insights",
@@ -1777,6 +2546,9 @@ elif role == "HR":
     # --------------------------------------------------
     with tab1:
         st.header("HR Action Center")
+        st.subheader("What this helps HR answer")
+        st.dataframe(usefulness_answer("HR"), use_container_width=True, hide_index=True)
+
         st.markdown(
             "This page answers the main HR question: **who needs attention, why, and what should be done next?**"
         )
@@ -1864,6 +2636,60 @@ elif role == "HR":
     # TAB 2 — WORKFORCE EXPLORER
     # --------------------------------------------------
     with tab2:
+        st.header("Blue-Line Valuation")
+        st.markdown(
+            """
+            This view estimates **sustainable value potential** from observable signals.
+            It does not measure employee worth. KPIs are treated as indicators of value drivers, not as value itself.
+            """
+        )
+        note(
+            "<b>Blue-Line principle:</b> indicators are not the objective. They are learning signals that help CACEIS understand which conditions may create, sustain, or destroy long-term value.",
+            "governance",
+        )
+        col1, col2, col3, col4 = st.columns(4)
+        col1.metric("Avg contribution signal", safe_mean(employee_value, "contribution_signal"))
+        col2.metric("Avg future value signal", safe_mean(employee_value, "learning_future_value_signal"))
+        col3.metric("Avg sustainability signal", safe_mean(employee_value, "sustainability_signal"))
+        col4.metric("Avg interpretation confidence", safe_mean(employee_value, "interpretation_confidence"))
+
+        st.subheader("Valuation archetype distribution")
+        archetype_counts = (
+            employee_value["valuation_archetype"]
+            .value_counts()
+            .rename_axis("Valuation archetype")
+            .reset_index(name="Employees")
+        )
+        fig = px.bar(archetype_counts, x="Valuation archetype", y="Employees", title="Distribution of Blue-Line valuation archetypes")
+        st.plotly_chart(clean_chart(fig), use_container_width=True)
+        st.dataframe(archetype_counts, use_container_width=True, hide_index=True)
+
+        st.subheader("Value potential vs interpretation confidence")
+        fig = px.scatter(
+            employee_value,
+            x="sustainable_value_potential",
+            y="interpretation_confidence",
+            color="valuation_archetype",
+            hover_data=[c for c in ["display_employee", department_col, "blue_line_question", "interpretation_risk"] if c and c in employee_value.columns],
+            title="Sustainable value potential must be interpreted with data confidence",
+        )
+        st.plotly_chart(clean_chart(fig), use_container_width=True)
+
+        st.subheader("Valuation explanation table")
+        explanation_cols = [
+            "display_employee", department_col, "valuation_archetype", "blue_line_question",
+            "contribution_signal", "learning_future_value_signal", "sustainability_signal",
+            "progression_signal", "sustainable_value_potential", "interpretation_confidence",
+            "reliability_adjusted_value_potential", "interpretation_risk",
+        ]
+        explanation_cols = [c for c in explanation_cols if c and c in employee_value.columns]
+        st.dataframe(employee_value[explanation_cols], use_container_width=True, hide_index=True)
+        note(
+            "<b>Interpretation rule:</b> a high value potential with low confidence is not a strong conclusion. It is a prompt to improve data quality or validate context.",
+            "warning",
+        )
+
+    with tab3:
         st.header("Workforce Explorer")
         st.markdown(
             "Use this view to explore workforce patterns by segment, department, reliability, learning, and value proxy."
@@ -2008,7 +2834,7 @@ elif role == "HR":
     # --------------------------------------------------
     # TAB 3 — EMPLOYEE / TEAM DRILL-DOWN
     # --------------------------------------------------
-    with tab3:
+    with tab4:
         st.header("Employee / Team Drill-Down")
         st.markdown("HR can inspect one department or one employee while still seeing employee and manager context logs.")
 
@@ -2064,7 +2890,7 @@ elif role == "HR":
 
     # TAB 4 — AI INSIGHTS
     # --------------------------------------------------
-    with tab4:
+    with tab5:
         st.header("AI Insights")
         st.markdown(
             """
@@ -2172,7 +2998,7 @@ elif role == "HR":
     # --------------------------------------------------
     # TAB 5 — DATA & DOCUMENTS
     # --------------------------------------------------
-    with tab5:
+    with tab6:
         st.header("Data & Documents")
         st.markdown(
             "This tab combines KPI audit, data quality checks, and document intelligence."
@@ -2224,7 +3050,7 @@ elif role == "HR":
     # --------------------------------------------------
     # TAB 6 — USAGE & PRINCIPLES
     # --------------------------------------------------
-    with tab6:
+    with tab7:
         st.header("Usage & Principles")
 
         st.subheader("What this tool does")
@@ -2280,9 +3106,10 @@ elif role == "HR":
 # PRODUCT OWNER / ADMIN VIEW
 # --------------------------------------------------
 elif role == "Product Owner":
-    tab1, tab2, tab3, tab4, tab5 = st.tabs(
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
         [
             "System Health",
+            "Valuation Model",
             "Data Quality",
             "AI Monitoring",
             "Governance & Roadmap",
@@ -2295,6 +3122,9 @@ elif role == "Product Owner":
     # --------------------------------------------------
     with tab1:
         st.header("System Health")
+        st.subheader("What this helps Product Owners answer")
+        st.dataframe(usefulness_answer("Product Owner"), use_container_width=True, hide_index=True)
+
         st.markdown(
             "Product Owner view for monitoring pipeline readiness, generated outputs, and deployment completeness."
         )
@@ -2417,7 +3247,7 @@ elif role == "Product Owner":
                 },
                 {
                     "Step": 6,
-                    "Command": 'python -m streamlit run "dashboard/final version/streamlit_app_v3.py"',
+                    "Command": 'python -m streamlit run "dashboard/final version/streamlit_app_v4.py"',
                     "Expected output": "Launch dashboard",
                 },
             ]
@@ -2426,9 +3256,63 @@ elif role == "Product Owner":
         st.dataframe(run_order, use_container_width=True, hide_index=True)
 
     # --------------------------------------------------
-    # TAB 2 — DATA QUALITY
+    # TAB 2 — VALUATION MODEL
     # --------------------------------------------------
     with tab2:
+        st.header("Valuation Model Monitoring")
+        st.markdown(
+            """
+            Monitor whether the Blue-Line valuation framework is usable, reliable, and responsible.
+            The objective is not score production; it is explainable, confidence-aware decision support.
+            """
+        )
+        col1, col2, col3, col4 = st.columns(4)
+        col1.metric("Avg value potential", safe_mean(employee_value, "sustainable_value_potential"))
+        col2.metric("Avg adjusted potential", safe_mean(employee_value, "reliability_adjusted_value_potential"))
+        col3.metric("Avg interpretation risk", safe_mean(employee_value, "interpretation_risk"))
+        col4.metric("Archetypes detected", f"{employee_value['valuation_archetype'].nunique():,}" if "valuation_archetype" in employee_value.columns else "N/A")
+
+        st.subheader("Model input dimensions")
+        dimension_cols = ["contribution_signal", "learning_future_value_signal", "sustainability_signal", "progression_signal", "interpretation_confidence"]
+        available_dimension_cols = [c for c in dimension_cols if c in employee_value.columns]
+        if available_dimension_cols:
+            dimension_summary = pd.DataFrame({
+                "Dimension": available_dimension_cols,
+                "Average score": [round(employee_value[c].mean(), 3) for c in available_dimension_cols],
+                "Minimum": [round(employee_value[c].min(), 3) for c in available_dimension_cols],
+                "Maximum": [round(employee_value[c].max(), 3) for c in available_dimension_cols],
+                "Missing values": [int(employee_value[c].isna().sum()) for c in available_dimension_cols],
+            })
+            st.dataframe(dimension_summary, use_container_width=True, hide_index=True)
+            fig = px.bar(dimension_summary, x="Dimension", y="Average score", title="Average valuation model input dimensions")
+            st.plotly_chart(clean_chart(fig), use_container_width=True)
+
+        st.subheader("Interpretation risk monitoring")
+        fig = px.histogram(employee_value, x="interpretation_risk", nbins=25, title="Distribution of interpretation risk")
+        st.plotly_chart(clean_chart(fig), use_container_width=True)
+
+        if department_col and "valuation_archetype" in employee_value.columns:
+            st.subheader("Valuation archetype by department")
+            archetype_department = employee_value.groupby([department_col, "valuation_archetype"]).size().reset_index(name="Employees")
+            fig = px.bar(archetype_department, x=department_col, y="Employees", color="valuation_archetype", title="Valuation archetypes by department/entity")
+            st.plotly_chart(clean_chart(fig), use_container_width=True)
+            st.dataframe(archetype_department, use_container_width=True, hide_index=True)
+
+        st.subheader("Model limitations")
+        limitations = pd.DataFrame([
+            {"Limitation": "Indicators are proxies", "Implication": "The model estimates sustainable value potential; it does not directly measure financial value.", "Control": "Show dimension scores and interpretation confidence."},
+            {"Limitation": "Performance reviews may be biased", "Implication": "Contribution signal may reflect review process bias.", "Control": "Monitor rating distributions by team and manager if data becomes available."},
+            {"Limitation": "Absence data is a lagging signal", "Implication": "Burnout or disengagement may appear before absence increases.", "Control": "Add workload, engagement, and recovery indicators in future versions."},
+            {"Limitation": "No supervised outcome labels yet", "Implication": "Risk labels are not validated predictive models.", "Control": "Treat AI outputs as segmentation and hypothesis generation, not prediction."},
+            {"Limitation": "Low data coverage", "Implication": "Some profiles cannot be interpreted safely.", "Control": "Use interpretation confidence and block strong conclusions below threshold."},
+        ])
+        st.dataframe(limitations, use_container_width=True, hide_index=True)
+        note("<b>Product Owner rule:</b> assess valuation by reliability, explainability, bias risk, and usefulness for learning — not by score production alone.", "governance")
+
+    # --------------------------------------------------
+    # TAB 3 — DATA QUALITY
+    # --------------------------------------------------
+    with tab3:
         st.header("Data Quality")
         st.markdown(
             "This view checks whether the data is complete and reliable enough to support interpretation."
@@ -2525,7 +3409,7 @@ elif role == "Product Owner":
     # --------------------------------------------------
     # TAB 3 — AI MONITORING
     # --------------------------------------------------
-    with tab3:
+    with tab4:
         st.header("AI Monitoring")
         st.markdown(
             "Monitor AI outputs for balance, interpretability, usefulness, and responsible deployment readiness."
@@ -2670,7 +3554,7 @@ elif role == "Product Owner":
     # --------------------------------------------------
     # TAB 4 — GOVERNANCE & ROADMAP
     # --------------------------------------------------
-    with tab4:
+    with tab5:
         st.header("Governance & Roadmap")
         st.markdown(
             "This tab explains how the platform should evolve from prototype to responsible production system."
@@ -2813,7 +3697,7 @@ elif role == "Product Owner":
     # --------------------------------------------------
     # TAB 5 — DOCUMENT PIPELINE
     # --------------------------------------------------
-    with tab5:
+    with tab6:
         st.header("Document Pipeline")
         st.markdown(
             "Monitor unstructured document processing and theme extraction."

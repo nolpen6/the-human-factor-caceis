@@ -99,6 +99,122 @@ def build_employee_value_table(hr: pd.DataFrame, absence: pd.DataFrame, training
     return employee
 
 
+def normalize_series(series: pd.Series) -> pd.Series:
+    """Normalize a numeric series to 0-1. Neutral 0.5 is used when scaling is impossible."""
+    series = pd.to_numeric(series, errors="coerce")
+    if series.notna().sum() == 0:
+        return pd.Series(0.5, index=series.index)
+    min_val = series.min()
+    max_val = series.max()
+    if pd.isna(min_val) or pd.isna(max_val) or min_val == max_val:
+        return pd.Series(0.5, index=series.index)
+    return ((series - min_val) / (max_val - min_val)).fillna(0.5)
+
+
+def add_blue_line_valuation(employee: pd.DataFrame) -> pd.DataFrame:
+    """
+    Add a Blue-Line valuation layer.
+
+    This does not measure employee worth or direct financial value. It estimates
+    sustainable value potential from observable indicators and adjusts interpretation
+    by data reliability.
+    """
+    df = employee.copy()
+
+    contribution_inputs = []
+    if "performance_score" in df.columns:
+        contribution_inputs.append(normalize_series(df["performance_score"]))
+    if "performance_consistency_score" in df.columns:
+        contribution_inputs.append(normalize_series(df["performance_consistency_score"]))
+    df["contribution_signal"] = pd.concat(contribution_inputs, axis=1).mean(axis=1) if contribution_inputs else 0.5
+
+    learning_inputs = []
+    if "learning_intensity_score" in df.columns:
+        learning_inputs.append(normalize_series(df["learning_intensity_score"]))
+    if "training_hours" in df.columns:
+        learning_inputs.append(normalize_series(df["training_hours"]))
+    if "training_count" in df.columns:
+        learning_inputs.append(normalize_series(df["training_count"]))
+    df["learning_future_value_signal"] = pd.concat(learning_inputs, axis=1).mean(axis=1) if learning_inputs else 0.5
+
+    progression_inputs = []
+    if "talent_progression_proxy" in df.columns:
+        progression_inputs.append(normalize_series(df["talent_progression_proxy"]))
+    if "seniority_progression_score" in df.columns:
+        progression_inputs.append(normalize_series(df["seniority_progression_score"]))
+    df["progression_signal"] = pd.concat(progression_inputs, axis=1).mean(axis=1) if progression_inputs else 0.5
+
+    if "absenteeism_risk_score" in df.columns:
+        df["sustainability_signal"] = 1 - normalize_series(df["absenteeism_risk_score"])
+    else:
+        df["sustainability_signal"] = 0.5
+
+    if "kpi_reliability_score" in df.columns:
+        df["interpretation_confidence"] = normalize_series(df["kpi_reliability_score"])
+    elif "data_coverage_score" in df.columns:
+        df["interpretation_confidence"] = normalize_series(df["data_coverage_score"])
+    else:
+        df["interpretation_confidence"] = 0.5
+
+    df["sustainable_value_potential"] = (
+        0.35 * df["contribution_signal"]
+        + 0.30 * df["learning_future_value_signal"]
+        + 0.20 * df["sustainability_signal"]
+        + 0.15 * df["progression_signal"]
+    )
+    df["reliability_adjusted_value_potential"] = df["sustainable_value_potential"] * df["interpretation_confidence"]
+    df["interpretation_risk"] = df["sustainable_value_potential"] * (1 - df["interpretation_confidence"])
+
+    # Compatibility with previous dashboard fields.
+    df["human_capital_value_proxy"] = df["sustainable_value_potential"]
+    df["reliability_adjusted_value_proxy"] = df["reliability_adjusted_value_potential"]
+    df["sustainability_balance"] = df["learning_future_value_signal"] - (1 - df["sustainability_signal"])
+
+    return df
+
+
+def assign_valuation_archetype(row: pd.Series) -> str:
+    contribution = row.get("contribution_signal", 0.5)
+    learning = row.get("learning_future_value_signal", 0.5)
+    sustainability = row.get("sustainability_signal", 0.5)
+    confidence = row.get("interpretation_confidence", 0.5)
+    value_potential = row.get("sustainable_value_potential", 0.5)
+
+    if confidence < 0.4:
+        return "Under-Observed Profile"
+    if contribution >= 0.65 and sustainability < 0.45:
+        return "Value Under Pressure"
+    if contribution >= 0.65 and learning < 0.4:
+        return "Strong Contributor / Low Development"
+    if learning >= 0.65 and contribution < 0.55:
+        return "Future Value Builder"
+    if value_potential >= 0.65 and sustainability >= 0.55 and learning >= 0.55:
+        return "Sustainable Value Builder"
+    if learning < 0.4 and contribution < 0.55:
+        return "Low Learning Visibility"
+    return "Stable / Monitor"
+
+
+def blue_line_question_from_archetype(archetype: str) -> str:
+    questions = {
+        "Under-Observed Profile": "Do we have enough reliable data to interpret this profile safely?",
+        "Value Under Pressure": "Is current contribution being created in a sustainable way?",
+        "Strong Contributor / Low Development": "Are strong contributors receiving enough future-oriented development?",
+        "Future Value Builder": "How can learning investment be converted into measurable contribution?",
+        "Sustainable Value Builder": "What conditions are enabling sustainable value creation here?",
+        "Low Learning Visibility": "Is low learning due to limited access, limited need, low motivation, or missing data?",
+        "Stable / Monitor": "What should be monitored to sustain contribution and development over time?",
+    }
+    return questions.get(archetype, "What context should be validated before acting on this signal?")
+
+
+def add_valuation_archetypes(employee: pd.DataFrame) -> pd.DataFrame:
+    df = employee.copy()
+    df["valuation_archetype"] = df.apply(assign_valuation_archetype, axis=1)
+    df["blue_line_question"] = df["valuation_archetype"].apply(blue_line_question_from_archetype)
+    return df
+
+
 def add_decision_flags(employee: pd.DataFrame):
     high_absence_cutoff = employee["absenteeism_risk_score"].quantile(0.80)
     high_learning_cutoff = employee["learning_intensity_score"].quantile(0.80)
@@ -155,7 +271,7 @@ def add_ai_segments(employee: pd.DataFrame, n_clusters: int = 4):
     silhouette = silhouette_score(X_scaled, employee["ai_segment"])
 
     cluster_summary = employee.groupby("ai_segment")[
-        features + ["human_capital_value_proxy"]
+        features + ["sustainable_value_potential"]
     ].mean()
 
     cluster_names = {}
@@ -164,8 +280,8 @@ def add_ai_segments(employee: pd.DataFrame, n_clusters: int = 4):
             cluster_names[cluster] = "Operational continuity risk"
         elif row["learning_intensity_score"] >= cluster_summary["learning_intensity_score"].quantile(0.75):
             cluster_names[cluster] = "Learning-intensive profile"
-        elif row["human_capital_value_proxy"] >= cluster_summary["human_capital_value_proxy"].quantile(0.75):
-            cluster_names[cluster] = "High value proxy profile"
+        elif row["sustainable_value_potential"] >= cluster_summary["sustainable_value_potential"].quantile(0.75):
+            cluster_names[cluster] = "High sustainable value potential"
         else:
             cluster_names[cluster] = "Stable baseline profile"
 
@@ -182,8 +298,8 @@ def build_department_summary(employee: pd.DataFrame):
         employee.groupby(dept_col, dropna=False)
         .agg(
             employees=("employee_id", "nunique"),
-            avg_value_proxy=("human_capital_value_proxy", "mean"),
-            avg_reliability_adjusted_value=("reliability_adjusted_value_proxy", "mean"),
+            avg_sustainable_value_potential=("sustainable_value_potential", "mean"),
+            avg_reliability_adjusted_potential=("reliability_adjusted_value_potential", "mean"),
             avg_absenteeism_risk=("absenteeism_risk_score", "mean"),
             avg_learning_intensity=("learning_intensity_score", "mean"),
             avg_kpi_reliability=("kpi_reliability_score", "mean"),
@@ -208,6 +324,8 @@ def main():
     print(f"All three: {len(set(hr['employee_id']) & set(absence['employee_id']) & set(training['employee_id']))}")
 
     employee = build_employee_value_table(hr, absence, training)
+    employee = add_blue_line_valuation(employee)
+    employee = add_valuation_archetypes(employee)
     employee = add_decision_flags(employee)
     employee, cluster_summary, silhouette = add_ai_segments(employee)
     department_summary = build_department_summary(employee)

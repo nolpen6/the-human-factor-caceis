@@ -222,3 +222,143 @@ Hannah Zilesch
 ## ⚠️ Note
 
 All data used in this project is anonymized or simulated for academic purposes.
+
+---
+
+## 🔵 Blue-Line Valuation Methodology
+
+The latest dashboard version follows the INSEAD Blue-Line logic: **indicators are not value itself**. KPIs are observable signals that help CACEIS learn which human-capital conditions may create, sustain, or destroy long-term value.
+
+This project therefore does **not** calculate the financial value of an individual employee. It estimates **sustainable value potential** from observable, reliability-adjusted indicators.
+
+### Valuation dimensions
+
+| Dimension | Meaning | Current data used |
+|---|---|---|
+| Contribution Signal | Observable current contribution | Performance score and performance-related fields |
+| Learning / Future Value Signal | Future capability development | Training count, training hours, learning intensity |
+| Sustainability Signal | Durability of contribution | Absenteeism / continuity risk, inverted so higher is better |
+| Progression Signal | Growth and internal development potential | Talent progression proxy where available |
+| Interpretation Confidence | How safely the signals can be interpreted | Data coverage and KPI reliability |
+
+### Sustainable Value Potential
+
+The prototype uses a transparent weighted model:
+
+```text
+Sustainable Value Potential =
+35% Contribution Signal
++ 30% Learning / Future Value Signal
++ 20% Sustainability Signal
++ 15% Progression Signal
+```
+
+The model then applies reliability awareness:
+
+```text
+Reliability-Adjusted Value Potential =
+Sustainable Value Potential × Interpretation Confidence
+```
+
+```text
+Interpretation Risk =
+Sustainable Value Potential × (1 - Interpretation Confidence)
+```
+
+A high value potential with weak confidence is therefore **not** treated as a strong conclusion. It becomes a prompt to improve data quality or validate context.
+
+### Valuation archetypes
+
+Instead of ranking employees, the dashboard assigns human-centered archetypes:
+
+- Sustainable Value Builder
+- Value Under Pressure
+- Strong Contributor / Low Development
+- Future Value Builder
+- Low Learning Visibility
+- Under-Observed Profile
+- Stable / Monitor
+
+These archetypes are used to generate **Blue-Line questions** and **recommended experiments**, not automatic decisions.
+
+---
+
+## 🧪 Recommendation and Experiment Engine
+
+The recommendation layer has been upgraded from “recommended actions” to **recommended experiments**.
+
+Each recommendation now includes:
+
+- key signal
+- human question
+- recommended experiment
+- expected signal change
+- review period
+- decision owner
+- governance guardrail
+
+Example:
+
+| Archetype | Blue-Line question | Recommended experiment |
+|---|---|---|
+| Value Under Pressure | Is current contribution being created sustainably? | Run a workload and recovery review, then test a targeted workload rebalance |
+| Strong Contributor / Low Development | Are strong contributors receiving enough future-oriented development? | Offer targeted training, mentoring, or mobility and monitor learning uptake |
+| Under-Observed Profile | Do we have enough reliable data to interpret safely? | Validate missing HR, performance, absence, and training records |
+
+This follows the project principle: **the goal is not to manage KPIs directly, but to learn which decisions and working conditions raise sustainable value.**
+
+---
+
+## 🧭 Dashboard V4 Enhancements
+
+The Streamlit dashboard now includes:
+
+- Blue-Line valuation fields
+- valuation archetypes
+- interpretation confidence
+- interpretation risk
+- recommended experiments
+- AI hypotheses and validation needs
+- employee and manager context logs
+- HR Blue-Line Valuation tab
+- Product Owner Valuation Model Monitoring tab
+
+The dashboard remains role-based:
+
+| Role | Main use |
+|---|---|
+| Employee | Understand own contribution, learning, sustainability, data visibility, and questions to discuss |
+| Manager | Coach teams using signals, context, and experiments |
+| HR | Monitor workforce patterns, reliability, sustainability, and governance |
+| Product Owner | Monitor model maturity, data quality, outputs, and deployment readiness |
+
+---
+
+## 🌍 Future External Data Enrichment
+
+To strengthen the valuation framework, future versions should integrate external data sources.
+
+| External source | Example use | How it improves valuation |
+|---|---|---|
+| Market salary benchmarks | Compensation surveys | Contextualizes retention and replacement risk |
+| Skill databases | ESCO, O*NET, skills taxonomies | Maps current roles to future skill requirements |
+| Labor market demand | Job postings, hiring trends | Identifies scarce or strategically critical roles |
+| Sector trends | Financial services workforce trends | Anticipates changing capability needs |
+| Training benchmarks | Certification and learning market data | Evaluates whether training investment matches market evolution |
+| Regulatory trends | Compliance and financial regulation updates | Anticipates future risk and compliance skill needs |
+| Wellbeing benchmarks | Occupational health benchmarks | Contextualizes absence and sustainability signals |
+| Technology trends | AI, automation, fund administration tools | Identifies reskilling and automation exposure |
+
+External data would not replace internal HR data. It would contextualize it. For example, a low learning signal is more concerning if the employee’s role is in a fast-changing skill area with strong external labor-market demand.
+
+---
+
+## ✅ Governance Reminder
+
+The platform must not be used for automatic employee ranking, sanctions, or final HR decisions. It is a decision-support and learning system. Every output should be interpreted with:
+
+- data reliability
+- employee and manager context
+- bias checks
+- human review
+- GDPR and privacy safeguards
