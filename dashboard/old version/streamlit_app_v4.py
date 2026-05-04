@@ -1,4 +1,5 @@
 from pathlib import Path
+import html
 
 import pandas as pd
 import plotly.express as px
@@ -63,10 +64,35 @@ st.markdown(
     li[role="option"] span, div[role="option"] span { color: #1f2933 !important; }
     li[role="option"]:hover, div[role="option"]:hover { background-color: #e0f2f1 !important; }
 
-    button[data-baseweb="tab"] { color: #334155 !important; }
+    div[data-baseweb="tab-list"] {
+        gap: 0.55rem;
+        padding-bottom: 0.3rem;
+        border-bottom: 1px solid #d9e2ec;
+    }
+
+    button[data-baseweb="tab"] {
+        color: #334155 !important;
+        font-size: 1.05rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.01em;
+        padding: 0.55rem 1rem !important;
+        margin-right: 0.2rem;
+        border: 1px solid transparent !important;
+        border-radius: 10px 10px 0 0 !important;
+        background-color: #eef2f7 !important;
+        min-height: 2.7rem;
+    }
+
+    button[data-baseweb="tab"]:hover {
+        background-color: #e2e8f0 !important;
+    }
+
     button[data-baseweb="tab"][aria-selected="true"] {
         color: #0f766e !important;
-        border-bottom-color: #0f766e !important;
+        background-color: #ffffff !important;
+        border: 1px solid #0f766e !important;
+        border-bottom: 2px solid #0f766e !important;
+        box-shadow: 0 -1px 0 #0f766e inset;
     }
 
     [data-testid="stMetricValue"] { color: #1f2933 !important; font-weight: 700 !important; }
@@ -104,7 +130,275 @@ st.markdown(
         margin: 1rem 0;
         color: #1f2933 !important;
     }
+
+    .human-card-info {
+        position: relative;
+        padding-top: 1.35rem;
+    }
+
+    .human-card-info.profile-summary-top-row {
+        padding-top: 1.8rem;
+    }
+
+    .card-info-popover {
+        position: absolute;
+        top: 0.65rem;
+        left: 0.75rem;
+        z-index: 4;
+    }
+
+    .card-info-popover > summary {
+        list-style: none;
+        width: 1.35rem;
+        height: 1.35rem;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        background-color: #e2e8f0;
+        border: 1px solid #cbd5e1;
+        color: #334155 !important;
+        font-weight: 800;
+        font-size: 0.85rem;
+        line-height: 1;
+        user-select: none;
+    }
+
+    .card-info-popover > summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .card-info-popover[open] > summary {
+        background-color: #cbd5e1;
+    }
+
+    .card-info-bubble {
+        position: absolute;
+        top: 1.75rem;
+        left: 0;
+        width: min(20rem, calc(100vw - 5rem));
+        background: #ffffff;
+        border: 1px solid #d9e2ec;
+        border-radius: 12px;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.16);
+        padding: 0.75rem 0.85rem;
+        color: #334155 !important;
+        font-size: 0.86rem;
+        line-height: 1.35;
+    }
+
+    .card-info-bubble::before {
+        content: "";
+        position: absolute;
+        top: -6px;
+        left: 12px;
+        width: 12px;
+        height: 12px;
+        background: #ffffff;
+        border-left: 1px solid #d9e2ec;
+        border-top: 1px solid #d9e2ec;
+        transform: rotate(45deg);
+    }
+
+    .signal-progress-card {
+        background-color: #ffffff !important;
+        border: 1px solid #d9e2ec;
+        border-radius: 14px;
+        padding: 1rem 1.1rem;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
+        margin-bottom: 0.7rem;
+        min-height: 168px;
+        height: 100%;
+        position: relative;
+        overflow: visible;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .signal-progress-head {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.3rem;
+        margin-bottom: 0.8rem;
+        min-height: 3rem;
+    }
+
+    .signal-progress-title {
+        margin: 0;
+        font-size: clamp(0.86rem, 0.7rem + 0.55vw, 1.0rem);
+        line-height: 1.2;
+        color: #1f2933 !important;
+        white-space: normal;
+        word-break: normal;
+        overflow-wrap: normal;
+        hyphens: none;
+        width: 100%;
+        min-height: 2.4rem;
+        min-width: 0;
+        text-align: left;
+        align-self: stretch;
+    }
+
+    .signal-pill {
+        display: inline-flex;
+        align-self: flex-end;
+        width: fit-content;
+        max-width: max-content;
+        font-size: 0.88rem;
+        font-weight: 700;
+        border-radius: 999px;
+        padding: 0.18rem 0.66rem;
+        white-space: nowrap;
+    }
+
+    .signal-pill-low {
+        background-color: #fee2e2;
+        color: #991b1b !important;
+        border: 1px solid #fecaca;
+    }
+
+    .signal-info-popover {
+        position: absolute;
+        top: 0.8rem;
+        left: 0.8rem;
+        z-index: 5;
+    }
+
+    .signal-info-popover > summary {
+        list-style: none;
+        width: 1.6rem;
+        height: 1.6rem;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        background-color: #e2e8f0;
+        border: 1px solid #cbd5e1;
+        color: #334155 !important;
+        font-weight: 800;
+        font-size: 0.95rem;
+        line-height: 1;
+        user-select: none;
+    }
+
+    .signal-info-popover > summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .signal-info-popover[open] > summary {
+        background-color: #cbd5e1;
+    }
+
+    .signal-info-bubble {
+        position: absolute;
+        top: 2rem;
+        left: 0;
+        width: min(21rem, calc(100vw - 6rem));
+        background: #ffffff;
+        border: 1px solid #d9e2ec;
+        border-radius: 12px;
+        box-shadow: 0 12px 30px rgba(15, 23, 42, 0.16);
+        padding: 0.8rem 0.9rem;
+        color: #334155 !important;
+        font-size: 0.88rem;
+        line-height: 1.35;
+    }
+
+    .signal-info-bubble::before {
+        content: "";
+        position: absolute;
+        top: -6px;
+        left: 12px;
+        width: 12px;
+        height: 12px;
+        background: #ffffff;
+        border-left: 1px solid #d9e2ec;
+        border-top: 1px solid #d9e2ec;
+        transform: rotate(45deg);
+    }
+
+    .signal-pill-medium {
+        background-color: #fef3c7;
+        color: #92400e !important;
+        border: 1px solid #fde68a;
+    }
+
+    .signal-pill-high {
+        background-color: #dcfce7;
+        color: #166534 !important;
+        border: 1px solid #bbf7d0;
+    }
+
+    .profile-blue-pill {
+        display: inline-flex;
+        width: fit-content;
+        max-width: 100%;
+        font-size: 0.88rem;
+        font-weight: 700;
+        border-radius: 999px;
+        padding: 0.24rem 0.72rem;
+        white-space: normal;
+        background-color: #dbeafe;
+        color: #1e3a8a !important;
+        border: 1px solid #bfdbfe;
+        line-height: 1.25;
+    }
+
+    .signal-track {
+        width: 100%;
+        height: 12px;
+        border-radius: 999px;
+        background-color: #0f172a;
+        overflow: hidden;
+    }
+
+    .signal-fill {
+        height: 100%;
+        border-radius: 999px;
+    }
+
+    .signal-fill-low { background-color: #ef4444; }
+    .signal-fill-medium { background-color: #f59e0b; }
+    .signal-fill-high { background-color: #65a30d; }
+
+    .signal-foot {
+        margin-top: 0.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.92rem;
+        color: #334155 !important;
+        font-weight: 600;
+        gap: 0.75rem;
+    }
+
+    @media (max-width: 1200px) {
+        .signal-progress-card {
+            min-height: 176px;
+        }
+    }
+
+    @media (max-width: 900px) {
+        .signal-progress-card {
+            min-height: 160px;
+        }
+
+        .signal-progress-title {
+            font-size: 0.84rem;
+        }
+    }
     .small-muted { color: #cbd5e1 !important; font-size: 0.92rem; }
+    .hero-subcaption {
+        font-size: 1.04rem;
+        font-weight: 500;
+        color: #334155 !important;
+        margin-top: -0.15rem;
+        margin-bottom: 0.4rem;
+    }
     [data-testid="stDataFrame"], [data-testid="stTable"] {
         background-color: #ffffff !important;
         color: #1f2933 !important;
@@ -130,6 +424,69 @@ st.markdown(
 
     [data-testid="stMarkdownContainer"] {
         color: #1f2933 !important;
+    }
+    .what-means-card {
+        background-color: #e3edfc !important;
+        border: 1px solid #cfe9ff;
+        border-radius: 12px;
+        padding: 0.9rem 1rem;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, 0.06);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 0.4rem;
+        min-height: 5.6rem;
+        width: 100%;
+        color: #0f172a !important;
+    }
+    .what-means-card h3 { margin: 0; font-size: 1.22rem; font-weight: 800; }
+    .what-means-card p { margin: 0; color: #334155 !important; font-size: 0.92rem; }
+    .score-explanation-table-wrap {
+        width: 100%;
+        overflow-x: auto;
+    }
+    .score-explanation-table {
+        width: 100%;
+        border-collapse: collapse;
+        table-layout: auto;
+        background: #ffffff;
+        border: 1px solid #d9e2ec;
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .score-explanation-table th,
+    .score-explanation-table td {
+        padding: 0.8rem 0.85rem;
+        border-bottom: 1px solid #e5e7eb;
+        vertical-align: top;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        word-break: normal;
+        color: #1f2933 !important;
+    }
+    .score-explanation-table th {
+        background: #eef4f7;
+        font-weight: 700;
+        text-align: left;
+    }
+    .score-explanation-table th:nth-child(1),
+    .score-explanation-table td:nth-child(1) {
+        min-width: 7.5rem;
+        width: 8rem;
+    }
+    .score-explanation-table th:nth-child(2),
+    .score-explanation-table td:nth-child(2) {
+        min-width: 4.5rem;
+        width: 6.5rem;
+    }
+    .score-explanation-table th:nth-child(3),
+    .score-explanation-table td:nth-child(3) {
+        min-width: 5.5rem;
+        width: 6rem;
+    }
+    .score-explanation-table tr:last-child td {
+        border-bottom: none;
     }
     </style>
     """,
@@ -287,7 +644,7 @@ if "valuation_archetype" not in employee_value.columns:
             return "Sustainable Value Builder"
         if row.get("learning_future_value_signal", 0.5) < 0.4 and row.get("contribution_signal", 0.5) < 0.55:
             return "Low Learning Visibility"
-        return "Stable / Monitor"
+        return "Stable but Monitor"
     employee_value["valuation_archetype"] = employee_value.apply(dashboard_archetype, axis=1)
 if "blue_line_question" not in employee_value.columns:
     employee_value["blue_line_question"] = employee_value["valuation_archetype"].map({
@@ -297,7 +654,7 @@ if "blue_line_question" not in employee_value.columns:
         "Future Value Builder": "How can learning investment be converted into measurable contribution?",
         "Sustainable Value Builder": "What conditions are enabling sustainable value creation here?",
         "Low Learning Visibility": "Is low learning due to limited access, limited need, low motivation, or missing data?",
-        "Stable / Monitor": "What should be monitored to sustain contribution and development over time?",
+        "Stable but Monitor": "What should be monitored to sustain contribution and development over time?",
     }).fillna("What context should be validated before acting on this signal?")
 
 # Backward-compatible names for old charts.
@@ -497,6 +854,38 @@ def soft_card(title: str, body: str):
         <div class="human-card">
             <h3 style="margin-top:0;">{title}</h3>
             <p style="margin-bottom:0;">{body}</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
+def soft_card_with_info_popover(
+    title: str,
+    body: str,
+    info_text: str,
+    body_style: str = "text",
+    card_class: str = "",
+):
+    """Render a summary card with a top-right info icon and popover bubble."""
+    safe_title = html.escape(str(title))
+    safe_body = html.escape(str(body))
+    safe_info = html.escape(str(info_text)).replace("\n", "<br>")
+    if body_style == "blue_badge":
+        body_html = f'<span class="profile-blue-pill">{safe_body}</span>'
+    else:
+        body_html = f'<p style="margin-bottom:0;">{safe_body}</p>'
+    extra_class = html.escape(card_class.strip())
+    class_suffix = f" {extra_class}" if extra_class else ""
+    st.markdown(
+        f"""
+        <div class="human-card human-card-info{class_suffix}">
+            <details class="card-info-popover">
+                <summary aria-label="What is this?">i</summary>
+                <div class="card-info-bubble">{safe_info}</div>
+            </details>
+            <h3 style="margin-top:0;">{safe_title}</h3>
+            {body_html}
         </div>
         """,
         unsafe_allow_html=True,
@@ -877,8 +1266,13 @@ with st.sidebar:
 # HEADER + AUTHENTICATION (DEMO)
 # --------------------------------------------------
 st.title("ONEValue by CACEIS")
-st.caption(
-    "A human capital intelligence platform inspired by the ONE CACEIS culture: care, growth, responsibility, and learning."
+st.markdown(
+    '<p class="hero-subcaption">A human capital intelligence platform inspired by the ONE CACEIS culture: Care, Growth, Responsibility, and Learning.</p>',
+    unsafe_allow_html=True,
+)
+st.markdown(
+    '<p style="font-style: italic; font-size: 0.9rem; color: #94a3b8; margin-top: -0.1rem;">Built by Anna Mika, Nolwenn Montillot, Emma Lou Villaret, and Hannah Zilesch · CACEIS x Albert School Alberthon</p>',
+    unsafe_allow_html=True,
 )
 
 # Pick two employee demo accounts with the strongest data coverage.
@@ -1050,10 +1444,6 @@ if st.session_state.logged_in_user:
                 "Validate governance, access control, and audit readiness.",
             )
 
-    st.caption(
-        "Built by Anna Mika, Nolwenn Montillot, Emma Lou Villaret, and Hannah Zilesch · CACEIS x Albert School Alberthon"
-    )
-
 else:
     login = st.sidebar.text_input("Enter demo login ID")
 
@@ -1138,10 +1528,97 @@ def score_band(value):
     return "Low"
 
 
+def normalize_signal_value(value) -> float | None:
+    """Normalize any numeric-like signal into a bounded 0-1 range for progress display."""
+    try:
+        val = float(value)
+    except (TypeError, ValueError):
+        return None
+    if pd.isna(val):
+        return None
+    if val < 0:
+        return 0.0
+    if val > 1:
+        return 1.0
+    return val
+
+
+def normalize_balance_progress_value(value) -> float | None:
+    """Map learning-vs-pressure balance (expected around -1..1) to a 0-1 progress scale."""
+    try:
+        val = float(value)
+    except (TypeError, ValueError):
+        return None
+    if pd.isna(val):
+        return None
+    mapped = (val + 1.0) / 2.0
+    if mapped < 0:
+        return 0.0
+    if mapped > 1:
+        return 1.0
+    return mapped
+
+
+def signal_progress_status(value: float | None) -> tuple[str, str]:
+    """Map numeric signal to progress status label and CSS suffix."""
+    if value is None:
+        return "Behind", "low"
+    if value >= 0.70:
+        return "On Track", "high"
+    if value >= 0.40:
+        return "Almost There", "medium"
+    return "Behind", "low"
+
+
+def render_signal_progress_card(title: str, value, info_text: str, target_label: str = "Target: 100%"):
+    """Render one employee signal as a progress bar card with status badge."""
+    normalized = normalize_signal_value(value)
+    status_text, status_css = signal_progress_status(normalized)
+    percent = 0.0 if normalized is None else round(normalized * 100, 1)
+    safe_title = html.escape(str(title))
+    safe_info_text = html.escape(str(info_text)).replace("\n", "<br>")
+
+    st.markdown(
+        f"""
+        <div class="signal-progress-card">
+            <details class="signal-info-popover">
+                <summary aria-label="What is this?">i</summary>
+                <div class="signal-info-bubble">{safe_info_text}</div>
+            </details>
+            <div class="signal-progress-head">
+                <span class="signal-pill signal-pill-{status_css}">{status_text}</span>
+                <h3 class="signal-progress-title">{safe_title}</h3>
+            </div>
+            <div class="signal-track">
+                <div class="signal-fill signal-fill-{status_css}" style="width: {percent}%;"></div>
+            </div>
+            <div class="signal-foot">
+                <span>{percent}% / 100%</span>
+                <span>{target_label}</span>
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
+
+
 def info_expander(title: str, body: str):
     """Small clickable info block for score cards. Streamlit metric help tooltips are easy to miss."""
     with st.expander(f"ℹ️ {title}", expanded=False):
         st.markdown(body)
+
+
+def soft_card_whatmeans(title: str, body: str):
+    """Render a pale-blue square card for the "What this means" section."""
+    st.markdown(
+        f"""
+        <div class="what-means-card">
+            <h3>{html.escape(str(title))}</h3>
+            <p>{html.escape(str(body))}</p>
+        </div>
+        """,
+        unsafe_allow_html=True,
+    )
 
 
 def signal_text(emp: pd.Series, primary_col: str, fallback_col: str | None = None) -> str:
@@ -1159,44 +1636,68 @@ def employee_signal_explanation(emp: pd.Series) -> pd.DataFrame:
     sustainability = emp.get("sustainability_signal", None)
     reliability = emp.get("interpretation_confidence", emp.get("kpi_reliability_score", None))
     absence = emp.get("absenteeism_risk_score", None)
+    def _format_score(val) -> str:
+        try:
+            if val is None or (isinstance(val, float) and pd.isna(val)):
+                return "N/A"
+            num = float(val)
+        except Exception:
+            return safe_value(pd.Series({"v": val}), "v")
+
+        # If value appears to be a 0-1 score, convert to percent; otherwise assume it's already percent-like
+        if abs(num) <= 1.0:
+            pct = round(num * 100.0, 1)
+        else:
+            pct = round(num, 1)
+        return f"{pct}%"
 
     return pd.DataFrame([
         {
             "Signal": "Development signal",
-            "Your score": safe_value(emp, "learning_future_value_signal") if "learning_future_value_signal" in emp.index else safe_value(emp, "learning_intensity_score"),
+            "Your score": _format_score(emp.get("learning_future_value_signal") if "learning_future_value_signal" in emp.index else emp.get("learning_intensity_score")),
             "Level": score_band(learning),
             "What it means": "How much visible training/development activity appears in the data. Low does not mean low talent; it may mean training is missing, informal, or not yet recorded.",
             "Good next question": "What skill or learning opportunity should I prioritize next?",
         },
         {
             "Signal": "Contribution signal",
-            "Your score": safe_value(emp, "contribution_signal") if "contribution_signal" in emp.index else safe_value(emp, "performance_score"),
+            "Your score": _format_score(emp.get("contribution_signal") if "contribution_signal" in emp.index else emp.get("performance_score")),
             "Level": score_band(contribution),
             "What it means": "A proxy based mainly on available review/performance information. It should be discussed with concrete examples because reviews can be incomplete or biased.",
             "Good next question": "Which parts of my work create the most value for my team?",
         },
         {
             "Signal": "Sustainability signal",
-            "Your score": safe_value(emp, "sustainability_signal"),
+            "Your score": _format_score(emp.get("sustainability_signal")),
             "Level": score_band(sustainability),
             "What it means": "A continuity signal derived from absence/PTO-risk patterns. Higher usually means lower observed continuity pressure. It is not a wellbeing diagnosis.",
             "Good next question": "Is my current workload sustainable?",
         },
         {
             "Signal": "Absence / continuity risk",
-            "Your score": safe_value(emp, "absenteeism_risk_score"),
+            "Your score": _format_score(emp.get("absenteeism_risk_score")),
             "Level": score_band(absence),
             "What it means": "Higher means more observed absence/continuity pressure in the data. This needs human context before any interpretation.",
             "Good next question": "Is there context missing behind my absence/PTO pattern?",
         },
         {
             "Signal": "Data visibility",
-            "Your score": safe_value(emp, "interpretation_confidence") if "interpretation_confidence" in emp.index else safe_value(emp, "kpi_reliability_score"),
+            "Your score": _format_score(emp.get("interpretation_confidence") if "interpretation_confidence" in emp.index else emp.get("kpi_reliability_score")),
             "Level": score_band(reliability),
             "What it means": "How complete the available data is. Low visibility means the dashboard should not be trusted strongly yet.",
             "Good next question": "Are my review, training, or HR records complete?",
         },
     ])
+
+
+def render_wrapped_table(df: pd.DataFrame):
+    """Render a compact HTML table that wraps long text and keeps row heights automatic."""
+    st.markdown(
+        '<div class="score-explanation-table-wrap">' +
+        df.to_html(index=False, escape=True, classes="score-explanation-table", border=0) +
+        '</div>',
+        unsafe_allow_html=True,
+    )
 
 
 def employee_plain_language_summary(emp: pd.Series) -> dict:
@@ -1553,92 +2054,51 @@ if role == "Employee":
             col1, col2, col3, col4 = st.columns(4)
 
             with col1:
-                st.metric("My development signal", safe_value(emp, "learning_future_value_signal"))
-                info_expander(
-                    "What is this?",
-                    "Visible training and development activity found in the data. A low score can mean formal training is low, informal learning is not recorded, or the data is incomplete. It is not a measure of talent."
+                render_signal_progress_card(
+                    "My development signal",
+                    emp.get("learning_future_value_signal", emp.get("learning_intensity_score", None)),
+                    "Visible training and development activity found in the data. A low score can mean formal training is low, informal learning is not recorded, or the data is incomplete. It is not a measure of talent.",
                 )
 
             with col2:
-                st.metric("My contribution signal", safe_value(emp, "contribution_signal"))
-                info_expander(
-                    "What is this?",
-                    "A proxy based mainly on available annual review/performance information. It should be discussed with concrete examples because reviews can be subjective, incomplete, or biased."
+                render_signal_progress_card(
+                    "My contribution signal",
+                    emp.get("contribution_signal", emp.get("performance_score", None)),
+                    "A proxy based mainly on available annual review/performance information. It should be discussed with concrete examples because reviews can be subjective, incomplete, or biased.",
                 )
 
             with col3:
-                st.metric("My sustainability signal", safe_value(emp, "sustainability_signal"))
-                info_expander(
-                    "What is this?",
-                    "A continuity signal based on absence/PTO-risk patterns. Higher usually means lower observed continuity pressure. It is not a health, burnout, or wellbeing diagnosis."
+                render_signal_progress_card(
+                    "My sustainability signal",
+                    emp.get("sustainability_signal", None),
+                    "A continuity signal based on absence/PTO-risk patterns. Higher usually means lower observed continuity pressure. It is not a health, burnout, or wellbeing diagnosis.",
                 )
 
             with col4:
-                st.metric("My data visibility", safe_value(emp, "interpretation_confidence"))
-                info_expander(
-                    "What is this?",
-                    "How complete and reliable the available records are. If this is low, the dashboard should not be used to make strong conclusions about you."
+                render_signal_progress_card(
+                    "My data visibility",
+                    emp.get("interpretation_confidence", emp.get("kpi_reliability_score", None)),
+                    "How complete and reliable the available records are. If this is low, the dashboard should not be used to make strong conclusions about you.",
                 )
 
             summary = employee_plain_language_summary(emp)
 
             st.subheader("What this means")
-            soft_card("Current situation", summary["situation"])
-            soft_card("Should I worry?", summary["worry"])
-            soft_card("Recommended next step", summary["next_step"])
+            wcol1, wcol2, wcol3 = st.columns(3)
+            with wcol1:
+                soft_card_whatmeans("1. Current situation", summary["situation"])
+            with wcol2:
+                soft_card_whatmeans("2. Should I worry?", summary["worry"])
+            with wcol3:
+                soft_card_whatmeans("3. Recommended next step", summary["next_step"])
+
+            # add a small visual gap between the cards row and the following expander/table
+            st.markdown('<div style="height:0.9rem"></div>', unsafe_allow_html=True)
 
             with st.expander("See exactly what each score means", expanded=True):
-                st.dataframe(employee_signal_explanation(emp), use_container_width=True, hide_index=True)
+                render_wrapped_table(employee_signal_explanation(emp))
 
             st.subheader("My profile summary")
-
-            summary_col1, summary_col2, summary_col3 = st.columns(3)
-
-            with summary_col1:
-                soft_card(
-                    "My team / entity",
-                    str(safe_value(emp, department_col)) if department_col else "Not available"
-                )
-                info_expander("Why show this?", "Your team/entity gives context. Scores should be compared and discussed within role and team context, not in isolation.")
-
-            with summary_col2:
-                soft_card(
-                    "My current situation",
-                    str(safe_value(emp, "valuation_archetype"))
-                )
-                info_expander("What does this label mean?", "This is a plain grouping used to guide conversation. It is not a ranking, grade, or HR decision.")
-
-            with summary_col3:
-                soft_card(
-                    "Question to discuss",
-                    str(safe_value(emp, "blue_line_question"))
-                )
-                info_expander("Why this question?", "The question points to the next human conversation: what context is missing, what should be developed, or what support may be useful.")
-
-            value_col1, value_col2, value_col3 = st.columns(3)
-
-            with value_col1:
-                soft_card(
-                    "Overall signal",
-                    str(safe_value(emp, "sustainable_value_potential"))
-                )
-                info_expander("What is this?", "A combined prototype signal from contribution, learning, sustainability, and progression. It is kept visible for transparency, but it should not be read as your personal value.")
-
-            with value_col2:
-                soft_card(
-                    "Confidence-adjusted signal",
-                    str(safe_value(emp, "reliability_adjusted_value_potential"))
-                )
-                info_expander("What is this?", "The overall signal reduced when data visibility is incomplete. If the data is weaker, the interpretation should be weaker too.")
-
-            with value_col3:
-                soft_card(
-                    "Learning vs pressure balance",
-                    str(safe_value(emp, "sustainability_balance"))
-                )
-                info_expander("What is this?", "Formula: learning intensity score minus absenteeism risk score. Positive means visible learning is stronger than continuity pressure. Negative means continuity pressure is stronger than visible learning. It is not a diagnosis.")
-
-            st.subheader("Recommended focus")
 
             employee_segment = str(emp.get("segment_name", ""))
             employee_risk = str(emp.get("risk_prediction_label", ""))
@@ -1676,7 +2136,58 @@ if role == "Employee":
                     "A useful next step is to maintain regular development conversations and define your next growth objective."
                 )
 
-            st.info(employee_focus)
+            st.info(f"**Recommended focus:** {employee_focus}")
+
+            summary_col1, summary_col2, summary_col3 = st.columns(3)
+
+            with summary_col1:
+                soft_card_with_info_popover(
+                    "My current situation",
+                    str(safe_value(emp, "valuation_archetype")),
+                    "This is a plain grouping used to guide conversation. It is not a ranking, grade, or HR decision.",
+                    body_style="blue_badge",
+                    card_class="profile-summary-top-row",
+                )
+
+            with summary_col2:
+                soft_card_with_info_popover(
+                    "My team / entity",
+                    str(safe_value(emp, department_col)) if department_col else "Not available",
+                    "Your team/entity gives context. Scores should be compared and discussed within role and team context, not in isolation.",
+                    card_class="profile-summary-top-row",
+                )
+
+            with summary_col3:
+                soft_card_with_info_popover(
+                    "Question to discuss",
+                    str(safe_value(emp, "blue_line_question")),
+                    "The question points to the next human conversation: what context is missing, what should be developed, or what support may be useful.",
+                    card_class="profile-summary-top-row",
+                )
+
+            value_col1, value_col2, value_col3 = st.columns(3)
+
+            with value_col1:
+                render_signal_progress_card(
+                    "Overall signal",
+                    emp.get("sustainable_value_potential", None),
+                    "A combined prototype signal from contribution, learning, sustainability, and progression. It is kept visible for transparency, but it should not be read as your personal value.",
+                )
+
+            with value_col2:
+                render_signal_progress_card(
+                    "Confidence-adjusted signal",
+                    emp.get("reliability_adjusted_value_potential", None),
+                    "The overall signal reduced when data visibility is incomplete. If the data is weaker, the interpretation should be weaker too.",
+                )
+
+            with value_col3:
+                render_signal_progress_card(
+                    "Learning vs pressure balance",
+                    normalize_balance_progress_value(emp.get("sustainability_balance", None)),
+                    "Formula: learning intensity score minus absenteeism risk score. Positive means visible learning is stronger than continuity pressure. Negative means continuity pressure is stronger than visible learning. It is not a diagnosis.",
+                    target_label="Target: Above 50%",
+                )
 
             note(
                 "<b>Your data rights:</b> this workspace uses your personal HR, training, review, and absence/PTO data to provide development-oriented insights. "
