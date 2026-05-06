@@ -102,6 +102,34 @@ h1,h2,h3,h4,h5,h6,p,li,span,label,div {
 [data-testid="stSidebar"] h2,
 [data-testid="stSidebar"] h3 { color: #f8fafc !important; }
 [data-testid="stSidebar"] .stDivider { border-color: var(--sidebar-2) !important; }
+/* Sidebar input labels and buttons darker for visibility */
+[data-testid="stSidebar"] label { color: #1e293b !important; }
+
+/* Sign out button styling: white with black text normally, navy with white text on hover/active */
+[data-testid="stSidebar"] button[data-testid^="stBaseButton"] {
+    background-color: #ffffff !important;
+    color: #0f172a !important;
+    border: 1px solid rgba(226,232,240,0.6) !important;
+    box-shadow: none !important;
+}
+[data-testid="stSidebar"] button[data-testid^="stBaseButton"] * { color: #0f172a !important; }
+[data-testid="stSidebar"] button[data-testid^="stBaseButton"]:hover,
+[data-testid="stSidebar"] button[data-testid^="stBaseButton"]:active {
+    background-color: #1e3a8a !important;
+    color: #ffffff !important;
+    border-color: #1e3a8a !important;
+}
+[data-testid="stSidebar"] button[data-testid^="stBaseButton"]:hover *,
+[data-testid="stSidebar"] button[data-testid^="stBaseButton"]:active * { color: #ffffff !important; }
+
+/* Sidebar input placeholder / helper text (inside input) — make noticeably darker */
+[data-testid="stSidebar"] input::placeholder,
+[data-testid="stSidebar"] input::-webkit-input-placeholder { color: #475569 !important; opacity: 1 !important; }
+[data-testid="stSidebar"] input:-ms-input-placeholder { color: #475569 !important; }
+
+/* Sidebar helper small text (external helper) */
+[data-testid="stSidebar"] small,
+[data-testid="stSidebar"] small * { color: #0f172a !important; }
 
 /* ── Tabs ── */
 button[data-baseweb="tab"] {
@@ -110,10 +138,16 @@ button[data-baseweb="tab"] {
   font-size: 0.88rem !important;
   color: var(--text-3) !important;
   letter-spacing: 0.01em;
+  border: 1px solid transparent !important;
+  border-radius: 6px !important;
+  transition: all 0.2s ease;
+  background: transparent !important;
+  padding: 0.5rem 1rem !important;
 }
 button[data-baseweb="tab"][aria-selected="true"] {
-  color: var(--primary-dk) !important;
-  border-bottom-color: var(--primary) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border-2) !important;
+  background: transparent !important;
 }
 
 /* ── Metrics ── */
@@ -192,6 +226,16 @@ div[data-testid="stPlotlyChart"] {
   flex-direction: column;
   gap: 0.2rem;
   transition: box-shadow .2s, border-color .2s;
+      min-height: 160px;
+      justify-content: space-between;
+}
+.stat-card--mid {
+    justify-content: flex-start;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+}
+.stat-card--mid .stat-value {
+    margin-top: 1.4rem;
 }
 .stat-card:hover {
   box-shadow: var(--shadow);
@@ -231,7 +275,28 @@ div[data-testid="stPlotlyChart"] {
   border-radius: var(--radius);
   padding: 1.1rem 1.25rem;
   box-shadow: var(--shadow-sm);
-  height: 100%;
+      min-height: 160px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+}
+.info-card--drilldown {
+            min-height: 132px;
+            justify-content: flex-start;
+            gap: 1.05rem;
+            padding-bottom: 0.9rem;
+}
+.info-card-body {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-2) !important;
+    line-height: 1.5;
+}
+.info-card--drilldown .info-card-body {
+    margin-top: 1.15rem;
+    flex: 1;
+    display: flex;
+    align-items: center;
 }
 .info-card h4 {
   margin: 0 0 0.4rem;
@@ -240,12 +305,7 @@ div[data-testid="stPlotlyChart"] {
   color: var(--text-2) !important;
   letter-spacing: 0.01em;
 }
-.info-card p {
-  margin: 0;
-  font-size: 0.9rem;
-  color: var(--text-2) !important;
-  line-height: 1.5;
-}
+
 
 /* Callout blocks */
 .callout {
@@ -306,18 +366,25 @@ div[data-testid="stPlotlyChart"] {
   display: flex;
   flex-direction: column;
   gap: 0.65rem;
-  min-height: 160px;
-  position: relative;
+    min-height: 160px;
+    position: relative;
   transition: box-shadow .2s;
 }
 .signal-card:hover { box-shadow: var(--shadow); }
+
+.signal-card-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:.5rem;
+}
 
 .signal-card-title {
   font-size: 0.88rem;
   font-weight: 600;
   color: var(--text-2) !important;
   line-height: 1.35;
-  padding-right: 1.5rem;   /* space for info btn */
+  padding-right: 0;
 }
 
 .signal-badge {
@@ -336,6 +403,26 @@ div[data-testid="stPlotlyChart"] {
 .signal-badge-low    { background: var(--danger-lt);  color: #7f1d1d !important; }
 .signal-badge-na     { background: var(--surface-2);  color: var(--text-4) !important;
                         border: 1px solid var(--border); }
+
+/* Main team profile badge (used in Manager view) */
+.team-profile-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--indigo);
+    color: #ffffff !important;
+    border-radius: 999px;
+    padding: 0.45rem 0.9rem;
+    font-weight: 800;
+    font-size: 0.95rem;
+    margin-bottom: 0.8rem;
+}
+
+/* Danger variant for high-risk / low-data badges */
+.team-profile-badge--danger {
+    background: linear-gradient(90deg, #faa2a2, #dc2626);
+    color: #fff !important;
+}
 
 .signal-track {
   width: 100%;
@@ -363,35 +450,145 @@ div[data-testid="stPlotlyChart"] {
   font-family: 'DM Mono', monospace;
 }
 
-/* ── Info popover ── */
-.info-btn-wrap {
-  position: absolute;
-  top: 0.8rem;
-  right: 0.8rem;
+/* Explorer summary cards */
+.explorer-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1rem 1.05rem 0.95rem;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    min-height: 168px;
+}
+.explorer-card:hover { box-shadow: var(--shadow); }
+.explorer-card--selected {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+.explorer-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+}
+.explorer-card-title {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--text-2) !important;
+    line-height: 1.35;
+}
+.explorer-card-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--text) !important;
+    line-height: 1.05;
+}
+.explorer-card-value--selected {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 8.5rem;
+    padding: 0.55rem 1.2rem;
+    border-radius: 999px;
+    background: #dbeafe;
+    border: 1px solid #93c5fd;
+    color: #1d4ed8 !important;
+    font-size: 2rem;
+    line-height: 1.1;
+    letter-spacing: 0.01em;
+}
+.explorer-card-foot {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.78rem;
+    color: var(--text-3) !important;
+    font-weight: 500;
+    font-family: 'DM Mono', monospace;
+}
+.explorer-card-track {
+    width: 100%;
+    height: 10px;
+    border-radius: 999px;
+    background: var(--bg);
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+.explorer-card-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width .4s cubic-bezier(.4,0,.2,1);
+}
+.explorer-card-fill-high { background: linear-gradient(90deg, #34d399, #059669); }
+.explorer-card-fill-medium { background: linear-gradient(90deg, #fbbf24, #d97706); }
+.explorer-card-fill-low { background: linear-gradient(90deg, #f87171, #dc2626); }
+
+.explorer-card-spacer { margin-bottom: 1.35rem; }
+
+.data-docs-low-card {
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+.data-docs-low-card-value {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 9rem;
+    padding: 0.6rem 1.15rem;
+    border-radius: 999px;
+    background: #fee2e2;
+    border: 2px solid #ef4444;
+    color: #b91c1c !important;
+    font-family: 'DM Mono', monospace;
+    font-size: 2.05rem;
+    font-weight: 800;
+    line-height: 1.05;
+}
+
+/* ── Info icon popover (click to open) ── */
+.info-btn-wrap{
+  position: relative;
+  align-self: flex-start;
 }
 .info-btn-wrap > details > summary {
   list-style: none;
-  width: 1.4rem;
-  height: 1.4rem;
+  marker: none;
+  appearance: none;
+  -webkit-appearance: none;
+  width: 1.5rem;
+  height: 1.5rem;
   border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  background: var(--surface-2);
-  border: 1px solid var(--border-2);
-  color: var(--text-3) !important;
+  background: #e2e8f0;
+  border: 1.5px solid #cbd5e1;
+  color: #475569 !important;
   font-weight: 700;
-  font-size: 0.78rem;
+  font-size: 0.82rem;
+  line-height: 1;
   user-select: none;
-  transition: background .15s;
+  transition: all 0.2s ease;
+  outline: none;
+  padding: 0;
 }
-.info-btn-wrap > details > summary::-webkit-details-marker { display: none; }
+.info-btn-wrap > details > summary:hover {
+  background: #cbd5e1;
+  border-color: #94a3b8;
+}
+.info-btn-wrap > details > summary::-webkit-details-marker { display: none !important; }
+.info-btn-wrap > details > summary::marker { display: none !important; }
 .info-btn-wrap > details[open] > summary { background: var(--primary-lt); border-color: var(--primary); }
 .info-popover-bubble {
   position: absolute;
   top: 1.8rem;
-  right: 0;
+  left: 0;
+  right: auto;
   width: min(20rem, calc(100vw - 4rem));
   background: var(--surface);
   border: 1px solid var(--border-2);
@@ -404,6 +601,18 @@ div[data-testid="stPlotlyChart"] {
   z-index: 10;
 }
 .info-popover-bubble * { color: var(--text-2) !important; }
+.info-popover-bubble::before{
+  content:"";
+  position:absolute;
+  top:-6px;
+  left:10px;
+  width:12px;
+  height:12px;
+  transform:rotate(45deg);
+  background: var(--surface);
+  border-left: 1px solid var(--border-2);
+  border-top: 1px solid var(--border-2);
+}
 
 /* ── "What it means" blue cards ── */
 .meaning-card {
@@ -414,7 +623,7 @@ div[data-testid="stPlotlyChart"] {
   display: flex;
   flex-direction: column;
   gap: 0.4rem;
-  height: 100%;
+    min-height: 160px;
 }
 .meaning-card h4 {
   margin: 0;
@@ -452,6 +661,9 @@ div[data-testid="stPlotlyChart"] {
   border-bottom: 2px solid var(--border);
   text-align: left;
   color: var(--text-2) !important;
+    /* allow header text to wrap so columns can size to content */
+    white-space: normal;
+    word-break: break-word;
 }
 .score-table td {
   padding: 0.7rem 0.9rem;
@@ -462,6 +674,130 @@ div[data-testid="stPlotlyChart"] {
 }
 .score-table tr:last-child td { border-bottom: none; }
 .score-table tr:hover td { background: var(--surface-2); }
+
+/* Compact table variant for dense layouts (smaller padding, tighter line-height) */
+.score-table--compact th { padding: 0.18rem 0.28rem; }
+.score-table--compact td { padding: 0.16rem 0.28rem; line-height: 1.02; }
+.score-table--explorer th:nth-child(1),
+.score-table--explorer td:nth-child(1) { min-width: 9.5rem; }
+.score-table--explorer th:nth-child(2),
+.score-table--explorer td:nth-child(2) { min-width: 9rem; }
+.score-table--explorer th:nth-child(3),
+.score-table--explorer td:nth-child(3) { min-width: 12rem; }
+.score-table--explorer th:nth-child(4),
+.score-table--explorer td:nth-child(4) { min-width: 7rem; }
+.score-table--explorer th:nth-child(5),
+.score-table--explorer td:nth-child(5) { min-width: 14rem; }
+.score-table--explorer th:nth-child(n+6),
+.score-table--explorer td:nth-child(n+6) { min-width: 6.5rem; }
+.score-table--explorer th:nth-child(12),
+.score-table--explorer td:nth-child(12) {
+    min-width: 8.5rem;
+}
+.score-table--explorer th:nth-child(13),
+.score-table--explorer td:nth-child(13) {
+    min-width: 28rem;
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: normal;
+}
+.score-table--explorer td {
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+.score-table-wrap--explorer {
+    max-height: 620px;
+    height: 620px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+}
+.score-table-wrap--explorer table {
+    width: 100%;
+}
+.score-table-wrap--drilldown-summary .score-table--explorer th,
+.score-table-wrap--drilldown-summary .score-table--explorer td {
+    padding: 0.12rem 0.24rem;
+    line-height: 1.0;
+}
+.score-table-wrap--drilldown-summary .score-table--explorer th:nth-child(1),
+.score-table-wrap--drilldown-summary .score-table--explorer td:nth-child(1) { min-width: 8.5rem; }
+.score-table-wrap--drilldown-summary .score-table--explorer th:nth-child(2),
+.score-table-wrap--drilldown-summary .score-table--explorer td:nth-child(2) { min-width: 8.5rem; }
+.score-table-wrap--drilldown-summary .score-table--explorer th:nth-child(3),
+.score-table-wrap--drilldown-summary .score-table--explorer td:nth-child(3) { min-width: 11rem; }
+.score-table-wrap--drilldown-summary .score-table--explorer th:nth-child(4),
+.score-table-wrap--drilldown-summary .score-table--explorer td:nth-child(4) { min-width: 7.5rem; }
+.score-table-wrap--drilldown-summary .score-table--explorer th:nth-child(5),
+.score-table-wrap--drilldown-summary .score-table--explorer td:nth-child(5) { min-width: 26rem; }
+.score-table-wrap--drilldown-summary .score-table--explorer th:nth-child(6),
+.score-table-wrap--drilldown-summary .score-table--explorer td:nth-child(6) { min-width: 7rem; }
+.score-table-wrap--drilldown-summary .score-table--explorer th:nth-child(7),
+.score-table-wrap--drilldown-summary .score-table--explorer td:nth-child(7) { min-width: 7rem; }
+.score-table-wrap--drilldown-summary .score-table--explorer th:nth-child(8),
+.score-table-wrap--drilldown-summary .score-table--explorer td:nth-child(8) { min-width: 7rem; }
+.score-table-wrap--drilldown-summary .score-table--explorer td:nth-child(5) {
+    white-space: normal;
+    word-break: normal;
+    overflow-wrap: normal;
+}
+.score-table-wrap--drilldown-summary {
+    max-height: 92px;
+    height: 92px;
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+}
+.score-table-wrap--drilldown-summary .score-table--explorer th,
+.score-table-wrap--drilldown-summary .score-table--explorer td {
+    padding-top: 0.08rem;
+    padding-bottom: 0.08rem;
+}
+
+/* Valuation explanation table tuning */
+.score-table--valuation th {
+    font-size: 0.72rem;
+    letter-spacing: 0.05em;
+    white-space: normal;
+    line-height: 1.15;
+    word-break: normal;
+    overflow-wrap: normal;
+    hyphens: none;
+}
+.score-table--valuation td {
+    font-size: 0.82rem;
+    line-height: 1.2;
+    vertical-align: middle;
+}
+.score-table--valuation tr td:first-child { min-width: 9rem; }
+.score-table--valuation tr td:nth-child(2) { min-width: 10rem; }
+.score-table--valuation tr td:nth-child(3) { min-width: 14rem; }
+.score-table--valuation tr td:nth-child(4) { min-width: 16rem; }
+.score-table--valuation tr th:nth-child(n+5),
+.score-table--valuation tr td:nth-child(n+5) {
+    min-width: 8.5rem;
+}
+.score-table--valuation tr td:last-child { min-width: 10rem; }
+.score-table-wrap--valuation { max-width: 100%; }
+
+.archetype-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.24rem 0.72rem;
+    border-radius: 999px;
+    border: 2px solid currentColor;
+    font-weight: 700;
+    font-size: 0.78rem;
+    line-height: 1.1;
+    white-space: normal;
+    text-align: center;
+}
 
 /* ── Page title ── */
 .page-title {
@@ -483,11 +819,10 @@ div[data-testid="stPlotlyChart"] {
     color: var(--text) !important;
     font-family: 'DM Sans', system-ui, sans-serif !important;
     margin: 0 0 0.35rem 0;
-    font-weight: 800;
 }
-.stMarkdown h1 { font-size: 1.65rem; }
-.stMarkdown h2 { font-size: 1.35rem; }
-.stMarkdown h3 { font-size: 1.15rem; }
+.stMarkdown h1 { font-size: 1.65rem !important; }
+.stMarkdown h2 { font-size: 1.2rem !important; }
+.stMarkdown h3 { font-size: 1.05rem !important; }
 .page-badge {
   background: var(--primary-lt);
   color: var(--primary-dk) !important;
@@ -529,13 +864,13 @@ div[data-testid="stPlotlyChart"] {
 
 /* ── Login screen ── */
 .login-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 1.25rem 1.4rem;
-  box-shadow: var(--shadow-sm);
-  height: 100%;
-  transition: box-shadow .2s, border-color .2s;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem 1.4rem;
+    box-shadow: var(--shadow-sm);
+    min-height: 160px;
+    transition: box-shadow .2s, border-color .2s;
 }
 .login-card:hover { box-shadow: var(--shadow); border-color: var(--primary); }
 .login-card h4 {
@@ -550,6 +885,178 @@ div[data-testid="stPlotlyChart"] {
 .priority-high   { color: var(--danger) !important; font-weight: 600; }
 .priority-medium { color: var(--warn) !important;   font-weight: 600; }
 .priority-low    { color: var(--success) !important; font-weight: 600; }
+
+/* Rounded priority badges used in manager tables */
+.priority-badge {
+    display: inline-block;
+    padding: 0.28rem 0.65rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.85rem;
+}
+.priority-badge-high {
+    background: #fee2e2;
+    color: #7f1d1d !important;
+    border: 1px solid #fca5a5;
+}
+.priority-badge-medium {
+    background: #fffbeb;
+    color: #78350f !important;
+    border: 1px solid #fcd34d;
+}
+.priority-badge-low {
+    background: #ecfdf5;
+    color: #065f46 !important;
+    border: 1px solid #86efac;
+}
+
+/* Ring-style priority badges used in coaching questions */
+.priority-ring {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.22rem 0.75rem;
+    border-radius: 999px;
+    border: 2px solid transparent;
+    font-weight: 700;
+    font-size: 0.85rem;
+    background: #ffffff;
+    line-height: 1.2;
+}
+.priority-ring-high {
+    border-color: #ef4444;
+    color: #991b1b !important;
+    background: #fef2f2;
+}
+.priority-ring-medium {
+    border-color: #f59e0b;
+    color: #92400e !important;
+    background: #fffbeb;
+}
+.priority-ring-low {
+    border-color: #22c55e;
+    color: #166534 !important;
+    background: #f0fdf4;
+}
+
+/* Segment name badges for coaching table */
+.segment-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.18rem 0.6rem;
+    border-radius: 999px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    line-height: 1;
+}
+.segment-badge--yellow { background: #fffbeb; color: #78350f !important; border: 1px solid #fcd34d; }
+.segment-badge--red    { background: #fee2e2; color: #7f1d1d !important; border: 1px solid #fca5a5; }
+.segment-badge--blue   { background: #dbeafe; color: #1e3a8a !important; border: 1px solid #93c5fd; }
+.segment-badge--purple { background: #ede9fe; color: #5b21b6 !important; border: 1px solid #c4b5fd; }
+.segment-badge--green  { background: #dcfce7; color: #166534 !important; border: 1px solid #86efac; }
+.segment-badge--neutral { background: #f1f5f9; color: #334155 !important; border: 1px solid #cbd5e1; }
+
+/* Controls above compact tables */
+.score-table-controls { margin-bottom: 0.35rem; display:flex; gap:0.5rem; align-items:center; }
+.score-table-controls .table-filter-input { padding: 0.35rem 0.5rem; border-radius: 6px; border:1px solid var(--border); font-size:0.9rem; }
+
+/* Employee profile summary ovals */
+.profile-oval-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0.4rem 0.9rem;
+    font-weight: 700;
+    font-size: 0.9rem;
+    line-height: 1.25;
+}
+.profile-oval-badge--blue {
+    background: #dbeafe;
+    color: #1e3a8a !important;
+    border: 1px solid #93c5fd;
+}
+.profile-oval-badge--yellow {
+    background: #fef9c3;
+    color: #713f12 !important;
+    border: 1px solid #fde68a;
+}
+.profile-oval-badge--red {
+    background: #fee2e2;
+    color: #7f1d1d !important;
+    border: 1px solid #fca5a5;
+}
+
+/* Compact variant for profile snapshot badges (avoid full-width stretch) */
+.profile-oval-badge--compact {
+    display: inline-flex;
+    max-width: none;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    font-size: 1.05rem;
+    padding: 0.5rem 1rem;
+}
+
+/* Increase badge size when used inside mid-aligned stat cards in HR view */
+.stat-card--mid .profile-oval-badge {
+    font-size: 1.35rem;
+    padding: 0.6rem 1rem;
+}
+
+/* Profile snapshot card: stack at top so we can position the badge mid-card */
+.info-card--profile-snapshot {
+    justify-content: flex-start;
+}
+.info-card--profile-snapshot h4 {
+    margin-bottom: 1rem;
+}
+.info-card--profile-snapshot .profile-oval-wrapper {
+    margin-top: 0.9rem;
+    display: flex;
+    align-items: center;
+}
+
+/* Team size badge styling */
+.team-size-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #dbeafe;
+    color: #1e40af !important;
+    border: 2px solid #60a5fa !important;
+    border-radius: 8px;
+    padding: 0.6rem 1rem;
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 1.2rem;
+}
+
+/* Level pills in score explanation table */
+.level-pill {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    padding: 0.2rem 0.65rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+.level-pill-high {
+    background: #fee2e2;
+    color: #7f1d1d !important;
+    border: 1px solid #fca5a5;
+}
+.level-pill-medium {
+    background: #fffbeb;
+    color: #78350f !important;
+    border: 1px solid #fcd34d;
+}
+.level-pill-low {
+    background: #ecfdf5;
+    color: #065f46 !important;
+    border: 1px solid #86efac;
+}
 
 /* ── Sidebar branding ── */
 .sidebar-brand {
@@ -968,31 +1475,89 @@ def score_band(value) -> str:
     return "Low"
 
 
+VALUATION_ARCHETYPE_COLORS = {
+    "Under-Observed Profile": "#fca5a5",
+    "Stable / Monitor": "#facc15",
+    "Value Under Pressure": "#c4b5fd",
+    "Strong Contributor / Low Development": "#99f6e4",
+    "Low Learning Visibility": "#fdba74",
+    "Sustainable Value Builder": "#22c55e",
+    "Future Value Builder": "#3b82f6",
+}
+
+
+def valuation_archetype_fill(color: str) -> str:
+    base = color.lstrip("#")
+    if len(base) != 6:
+        return "#f1f5f9"
+    red = int(base[0:2], 16)
+    green = int(base[2:4], 16)
+    blue = int(base[4:6], 16)
+    mix = lambda channel: int(round(channel + (255 - channel) * 0.82))
+    return f"#{mix(red):02x}{mix(green):02x}{mix(blue):02x}"
+
+
+def segment_visual_style(segment_name: str | None) -> tuple[str, str]:
+    seg = str(segment_name or "").strip().lower()
+    if not seg or seg == "nan":
+        return "segment-badge--neutral", "#64748b"
+    if any(token in seg for token in ["stable", "baseline"]):
+        return "segment-badge--yellow", "#facc15"
+    if any(token in seg for token in ["high engagement", "high risk", "risk", "continuity", "pressure", "at risk"]):
+        return "segment-badge--red", "#ef4444"
+    if any(token in seg for token in ["low visibility", "low information", "under-observed", "visibility"]):
+        return "segment-badge--blue", "#3b82f6"
+    if any(token in seg for token in ["high performers", "development", "future value", "builder"]):
+        return "segment-badge--purple", "#8b5cf6"
+    if "sustainable" in seg:
+        return "segment-badge--green", "#22c55e"
+    return "segment-badge--neutral", "#64748b"
+
+
+def segment_color_map(values: pd.Series | list) -> dict[str, str]:
+    unique_values = pd.Index(values).dropna().astype(str).unique().tolist()
+    return {value: segment_visual_style(value)[1] for value in unique_values}
+
+
 # ──────────────────────────────────────────────────────────────────────────────
 # COMPONENT BUILDERS
 # ──────────────────────────────────────────────────────────────────────────────
 
-def stat_card(label: str, value, sub: str = "", accent: str = "primary"):
+def stat_card(label: str, value, sub: str = "", accent: str = "primary", card_class: str = "", value_html: str | None = None):
     css = {
         "primary": "stat-card-accent",
         "warn":    "stat-card-accent-warn",
         "danger":  "stat-card-accent-danger",
         "indigo":  "stat-card-accent-indigo",
     }.get(accent, "stat-card-accent")
+    class_attr = f"stat-card {css}" + (f" {card_class}" if card_class else "")
+    value_markup = value_html if value_html is not None else html.escape(str(value))
     st.markdown(f"""
-    <div class="stat-card {css}">
+    <div class="{class_attr}">
       <p class="stat-label">{html.escape(str(label))}</p>
-      <p class="stat-value">{html.escape(str(value))}</p>
+      <p class="stat-value">{value_markup}</p>
       {"" if not sub else f'<p class="stat-sub">{html.escape(str(sub))}</p>'}
     </div>""", unsafe_allow_html=True)
 
 
-def info_card(title: str, body: str):
-    st.markdown(f"""
-    <div class="info-card">
-      <h4>{html.escape(str(title))}</h4>
-      <p>{html.escape(str(body))}</p>
-    </div>""", unsafe_allow_html=True)
+def info_card(title: str, body: str, card_class: str = "", body_html: str | None = None):
+        class_attr = "info-card" + (f" {card_class}" if card_class else "")
+        body_markup = body_html if body_html is not None else html.escape(str(body))
+        st.markdown(f"""
+        <div class="{class_attr}">
+            <h4>{html.escape(str(title))}</h4>
+            <div class="info-card-body">{body_markup}</div>
+        </div>""", unsafe_allow_html=True)
+
+
+def profile_snapshot_card(title: str, body: str, color_class: str = "profile-oval-badge--yellow"):
+        st.markdown(f"""
+        <div class="info-card info-card--profile-snapshot">
+            <h4>{html.escape(str(title))}</h4>
+            <div class="profile-oval-wrapper">
+                <div class="profile-oval-badge {color_class} profile-oval-badge--compact">{html.escape(str(body))}</div>
+            </div>
+        </div>""", unsafe_allow_html=True)
 
 
 def callout(body: str, kind: str = "info"):
@@ -1032,27 +1597,33 @@ def _norm_signal(value) -> float | None:
     return max(0.0, min(1.0, v))
 
 
-def signal_progress_card(title: str, value, info_text: str):
+def signal_progress_card(
+    title: str,
+    value,
+    info_text: str,
+    badge_labels: tuple[str, str, str] | None = None,
+):
     n = _norm_signal(value)
     pct = 0.0 if n is None else round(n * 100, 1)
+    low_label, medium_label, high_label = badge_labels or ("Behind", "Almost There", "On Track")
     if n is None:
         status, css = "No data", "na"
     elif n >= 0.70:
-        status, css = "On Track", "high"
+        status, css = high_label, "high"
     elif n >= 0.40:
-        status, css = "Almost There", "medium"
+        status, css = medium_label, "medium"
     else:
-        status, css = "Behind", "low"
+        status, css = low_label, "low"
 
     st.markdown(f"""
     <div class="signal-card">
-      <div class="info-btn-wrap">
-        <details>
-          <summary aria-label="More info">i</summary>
-          <div class="info-popover-bubble">{html.escape(str(info_text))}</div>
-        </details>
-      </div>
-      <div>
+      <div class="signal-card-header">
+        <div class="info-btn-wrap">
+          <details>
+            <summary aria-label="More info">i</summary>
+            <div class="info-popover-bubble">{html.escape(str(info_text))}</div>
+          </details>
+        </div>
         <span class="signal-badge signal-badge-{css}">{status}</span>
       </div>
       <p class="signal-card-title">{html.escape(str(title))}</p>
@@ -1066,6 +1637,69 @@ def signal_progress_card(title: str, value, info_text: str):
     </div>""", unsafe_allow_html=True)
 
 
+def explorer_progress_card(
+        title: str,
+        value,
+        info_text: str,
+        badge_labels: tuple[str, str, str] | None = None,
+):
+        n = _norm_signal(value)
+        pct = 0.0 if n is None else round(n * 100, 1)
+        low_label, medium_label, high_label = badge_labels or ("Low", "Medium", "High")
+        if n is None:
+                status, css = "No data", "low"
+                pct = 0.0
+        elif n >= 0.70:
+                status, css = high_label, "high"
+        elif n >= 0.40:
+                status, css = medium_label, "medium"
+        else:
+                status, css = low_label, "low"
+
+        st.markdown(f"""
+        <div class="explorer-card">
+            <div class="explorer-card-header">
+                <div class="info-btn-wrap">
+                    <details>
+                        <summary aria-label="More info">i</summary>
+                        <div class="info-popover-bubble">{html.escape(str(info_text))}</div>
+                    </details>
+                </div>
+                <span class="signal-badge signal-badge-{css}">{status}</span>
+            </div>
+            <div class="explorer-card-title">{html.escape(str(title))}</div>
+            <div class="explorer-card-track">
+                <div class="explorer-card-fill explorer-card-fill-{css}" style="width:{pct}%"></div>
+            </div>
+            <div class="explorer-card-foot">
+                <span>{pct}%</span>
+                <span>Target 100%</span>
+            </div>
+        </div>""", unsafe_allow_html=True)
+
+
+def selected_employees_card(count: int):
+        st.markdown(f"""
+        <div class="explorer-card explorer-card--selected">
+            <div class="explorer-card-title">Selected employees</div>
+            <div class="explorer-card-value explorer-card-value--selected">{count:,}</div>
+            <div class="explorer-card-foot" style="width:100%; justify-content:center;">
+                <span>Filtered in the current view</span>
+            </div>
+        </div>""", unsafe_allow_html=True)
+
+
+def low_data_records_card(count: int):
+        st.markdown(f"""
+        <div class="explorer-card data-docs-low-card">
+            <div class="explorer-card-title">Low-data records</div>
+            <div class="data-docs-low-card-value">{count:,}</div>
+            <div class="explorer-card-foot" style="width:100%; justify-content:center;">
+                <span>Records flagged as low visibility</span>
+            </div>
+        </div>""", unsafe_allow_html=True)
+
+
 def wrapped_table(df: pd.DataFrame):
     st.markdown(
         '<div class="score-table-wrap">'
@@ -1073,6 +1707,41 @@ def wrapped_table(df: pd.DataFrame):
         + "</div>",
         unsafe_allow_html=True,
     )
+
+
+def wrapped_table_with_level_pills(df: pd.DataFrame, level_col: str = "Level"):
+    if df.empty:
+        wrapped_table(df)
+        return
+
+    headers = list(df.columns)
+    rows_html = []
+
+    for _, row in df.iterrows():
+        cells = []
+        for h in headers:
+            value = row.get(h, "")
+            if h == level_col:
+                label = str(value)
+                css = "level-pill-low"
+                if label.lower().startswith("high"):
+                    css = "level-pill-high"
+                elif label.lower().startswith("medium"):
+                    css = "level-pill-medium"
+                cells.append(f'<td><span class="level-pill {css}">{html.escape(label)}</span></td>')
+            else:
+                cells.append(f"<td>{html.escape(str(value))}</td>")
+        rows_html.append("<tr>" + "".join(cells) + "</tr>")
+
+    table_html = (
+        '<div class="score-table-wrap"><table class="score-table">'
+        + "<thead><tr>"
+        + "".join(f"<th>{html.escape(h)}</th>" for h in headers)
+        + "</tr></thead><tbody>"
+        + "".join(rows_html)
+        + "</tbody></table></div>"
+    )
+    st.markdown(table_html, unsafe_allow_html=True)
 
 
 def clean_chart(fig):
@@ -1179,8 +1848,13 @@ def derive_value_lens(row: pd.Series) -> str:
     return "Standard workforce monitoring"
 
 
-def show_caceis_value_lens(df: pd.DataFrame, title: str = "CACEIS Value Lens"):
+def show_caceis_value_lens(df: pd.DataFrame, title: str = "CACEIS Value Lens", team_label: str | None = None):
     section_header(title)
+    if team_label:
+        st.markdown(
+            f"<div class='team-profile-badge'>Current team: <strong>{html.escape(str(team_label))}</strong></div>",
+            unsafe_allow_html=True,
+        )
     if df.empty:
         st.info("No data available.")
         return
@@ -1191,10 +1865,64 @@ def show_caceis_value_lens(df: pd.DataFrame, title: str = "CACEIS Value Lens"):
         work["caceis_value_lens"]
         .value_counts().rename_axis("CACEIS question").reset_index(name="Profiles")
     )
-    st.dataframe(lens, use_container_width=True, hide_index=True)
-    fig = px.bar(lens, x="CACEIS question", y="Profiles",
-                 title="What business question does each signal support?")
-    st.plotly_chart(clean_chart(fig), use_container_width=True)
+    
+    # Sort by Profiles descending for better visual hierarchy
+    lens = lens.sort_values("Profiles", ascending=False).reset_index(drop=True)
+    total = lens["Profiles"].sum()
+    
+    # Build HTML for horizontal progress bars
+    html_rows = []
+    for idx, row in lens.iterrows():
+        question = html.escape(str(row["CACEIS question"]))
+        count = int(row["Profiles"])
+        pct = int(round(100 * count / total)) if total > 0 else 0
+        
+        bar = f'<div style="margin-bottom: 1.8rem;"><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;"><div style="font-size: 0.95rem; font-weight: 500; color: var(--text);">{question}</div><div style="font-size: 0.95rem; font-weight: 600; color: var(--text); white-space: nowrap; margin-left: 1rem;">{count} <span style="color: var(--text-3); font-weight: 400;">{pct}%</span></div></div><div style="width: 100%; height: 12px; background: var(--surface-2); border-radius: 999px; overflow: hidden; border: 1px solid var(--border);"><div style="width: {pct}%; height: 100%; background: linear-gradient(90deg, #3b82f6, #1d4ed8); border-radius: 999px;"></div></div></div>'
+        html_rows.append(bar)
+    
+    html_content = "".join(html_rows)
+    html_content += f'<div style="margin-top: 2rem; padding-top: 1rem; border-top: 2px solid var(--border); display: flex; justify-content: space-between; align-items: center;"><div style="font-size: 0.95rem; font-weight: 600; color: var(--text);">Total profiles</div><div style="font-size: 1.1rem; font-weight: 700; color: var(--text);">{total}</div></div>'
+    
+    st.markdown(html_content, unsafe_allow_html=True)
+
+
+def show_summary_lens(summary_df: pd.DataFrame, label_col: str, count_col: str, total_label: str = "Total profiles"):
+    """Render the same horizontal-lens visual style from a pre-aggregated summary table."""
+    if summary_df.empty or label_col not in summary_df.columns or count_col not in summary_df.columns:
+        st.info("No data available.")
+        return
+
+    lens = summary_df[[label_col, count_col]].copy()
+    lens[count_col] = pd.to_numeric(lens[count_col], errors="coerce").fillna(0)
+    lens = lens.sort_values(count_col, ascending=False).reset_index(drop=True)
+    total = int(lens[count_col].sum())
+
+    html_rows = []
+    for _, row in lens.iterrows():
+        label = html.escape(str(row[label_col]))
+        count = int(row[count_col])
+        pct = int(round(100 * count / total)) if total > 0 else 0
+        bar = (
+            '<div style="margin-bottom: 1.8rem;">'
+            '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">'
+            f'<div style="font-size: 0.95rem; font-weight: 500; color: var(--text);">{label}</div>'
+            f'<div style="font-size: 0.95rem; font-weight: 600; color: var(--text); white-space: nowrap; margin-left: 1rem;">{count} <span style="color: var(--text-3); font-weight: 400;">{pct}%</span></div>'
+            '</div>'
+            '<div style="width: 100%; height: 12px; background: var(--surface-2); border-radius: 999px; overflow: hidden; border: 1px solid var(--border);">'
+            f'<div style="width: {pct}%; height: 100%; background: linear-gradient(90deg, #3b82f6, #1d4ed8); border-radius: 999px;"></div>'
+            '</div>'
+            '</div>'
+        )
+        html_rows.append(bar)
+
+    html_content = "".join(html_rows)
+    html_content += (
+        '<div style="margin-top: 2rem; padding-top: 1rem; border-top: 2px solid var(--border); display: flex; justify-content: space-between; align-items: center;">'
+        f'<div style="font-size: 0.95rem; font-weight: 600; color: var(--text);">{html.escape(total_label)}</div>'
+        f'<div style="font-size: 1.1rem; font-weight: 700; color: var(--text);">{total}</div>'
+        '</div>'
+    )
+    st.markdown(html_content, unsafe_allow_html=True)
 
 
 def usefulness_answer(role: str) -> pd.DataFrame:
@@ -1520,6 +2248,325 @@ def manager_dynamic_questions(team_df: pd.DataFrame) -> pd.DataFrame:
     )
 
 
+def render_questions_table_with_badges(df: pd.DataFrame, priority_col: str = "Priority", compact: bool = False) -> str:
+    if df.empty:
+        return "<div class='info-card'><p>No rows.</p></div>"
+    headers = list(df.columns)
+    rows_html = []
+    for _, r in df.iterrows():
+        cells = []
+        for h in headers:
+            v = r.get(h, "")
+            if h == priority_col:
+                p = str(v)
+                cls = "priority-badge-low"
+                if p.lower().startswith("high"):
+                    cls = "priority-badge-high"
+                elif p.lower().startswith("medium"):
+                    cls = "priority-badge-medium"
+                # escape the label
+                cells.append(f"<td><span class=\"priority-badge {cls}\">{html.escape(p)}</span></td>")
+            else:
+                cells.append(f"<td>{html.escape(str(v))}</td>")
+        rows_html.append("<tr>" + "".join(cells) + "</tr>")
+
+    table_class = "score-table"
+    if compact:
+        table_class += " score-table--compact"
+    table_html = (
+        f"<div class=\"score-table-wrap\"><table class=\"{table_class}\">"
+        + "<thead><tr>" + "".join(f"<th>{html.escape(h)}</th>" for h in headers) + "</tr></thead>"
+        + "<tbody>" + "".join(rows_html) + "</tbody></table></div>"
+    )
+    return table_html
+
+
+def render_coaching_questions_table(
+    df: pd.DataFrame,
+    priority_col: str = "Priority",
+    compact: bool = False,
+    percent_cols: list | None = None,
+    uppercase_headers: bool = False,
+    segment_col: str | None = "segment_name",
+    controls: bool = True,
+    wrap_class_override: str | None = None,
+    wrap_style_override: str | None = None,
+) -> str:
+    if df.empty:
+        return "<div class='info-card'><p>No rows.</p></div>"
+
+    if percent_cols is None:
+        percent_cols = [
+            "learning_intensity_score",
+            "absenteeism_risk_score",
+            "sustainability_balance",
+            "kpi_reliability_score",
+        ]
+
+    headers = list(df.columns)
+    rows_html = []
+
+    for _, r in df.iterrows():
+        cells = []
+        for h in headers:
+            v = r.get(h, "")
+            # Priority column as ring badge
+            if h == priority_col:
+                p = str(v)
+                cls = "priority-ring-low"
+                if p.lower().startswith("high"):
+                    cls = "priority-ring-high"
+                elif p.lower().startswith("medium"):
+                    cls = "priority-ring-medium"
+                cells.append(f"<td><span class=\"priority-ring {cls}\">{html.escape(p)}</span></td>")
+            else:
+                # Segment name -> colored badge
+                if segment_col and h == segment_col:
+                    seg = str(v) if pd.notna(v) else ""
+                    cls, color = segment_visual_style(seg)
+                    cells.append(
+                        f'<td><span class="segment-badge {cls}" style="color:{color} !important;">{html.escape(seg)}</span></td>'
+                    )
+                # Format percentage columns
+                elif h in percent_cols:
+                    try:
+                        num = float(v)
+                        # scale to percent and show one decimal
+                        pct = f"{num*100:.1f} %"
+                    except Exception:
+                        pct = html.escape(str(v))
+                    cells.append(f"<td>{pct}</td>")
+                else:
+                    cells.append(f"<td>{html.escape(str(v))}</td>")
+        rows_html.append("<tr>" + "".join(cells) + "</tr>")
+
+    table_class = "score-table"
+    if compact:
+        table_class += " score-table--compact"
+        if not controls:
+            table_class += " score-table--explorer"
+
+    # Header labels: replace underscores with spaces to be friendlier
+    if uppercase_headers:
+        header_html = "".join(f"<th>{html.escape(h.replace('_', ' ').upper())}</th>" for h in headers)
+    else:
+        header_html = "".join(f"<th>{html.escape(h.replace('_', ' '))}</th>" for h in headers)
+
+    controls_html = ""
+    wrap_class = "score-table-wrap"
+    if compact and controls:
+        controls_html = '<div class="score-table-controls"><input class="table-filter-input" placeholder="Filter rows..." /></div>'
+        wrap_class = "score-table-wrap sortable"
+    elif compact:
+        wrap_class = "score-table-wrap score-table-wrap--explorer"
+
+    if wrap_class_override:
+        wrap_class = wrap_class_override
+
+    wrap_style = f' style="{wrap_style_override}"' if wrap_style_override else ""
+
+    table_html = (
+        controls_html
+        + f"<div class=\"{wrap_class}\"{wrap_style}><table class=\"{table_class}\">"
+        + "<thead><tr>" + header_html + "</tr></thead>"
+        + "<tbody>" + "".join(rows_html) + "</tbody></table></div>"
+    )
+
+    # client-side sorting + filtering for compact tables
+    if compact and controls:
+        script = r'''
+<script>
+(function(){
+    const wraps = document.querySelectorAll('.score-table-wrap.sortable');
+    wraps.forEach(wrap=>{
+        const table = wrap.querySelector('table');
+        if(!table) return;
+        const tbody = table.querySelector('tbody');
+        const ths = table.querySelectorAll('th');
+        ths.forEach((th, idx)=>{
+            th.style.cursor = 'pointer';
+            th.addEventListener('click', ()=>{
+                const asc = th.dataset.sortOrder !== 'asc';
+                th.dataset.sortOrder = asc ? 'asc' : 'desc';
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                rows.sort((a,b)=>{
+                    const aText = a.children[idx].innerText.trim();
+                    const bText = b.children[idx].innerText.trim();
+                    const aNum = parseFloat(aText.replace('%',''));
+                    const bNum = parseFloat(bText.replace('%',''));
+                    if(!isNaN(aNum) && !isNaN(bNum)) return asc ? aNum - bNum : bNum - aNum;
+                    return asc ? aText.localeCompare(bText) : bText.localeCompare(aText);
+                });
+                rows.forEach(r=>tbody.appendChild(r));
+            });
+        });
+        const input = wrap.parentElement.querySelector('.table-filter-input');
+        if(input){
+            input.addEventListener('input', ()=>{
+                const q = input.value.trim().toLowerCase();
+                Array.from(tbody.querySelectorAll('tr')).forEach(row=>{
+                    const text = row.innerText.toLowerCase();
+                    row.style.display = text.includes(q) ? '' : 'none';
+                });
+            });
+        }
+    });
+})();
+</script>
+'''
+        table_html += script
+
+    return table_html
+
+
+def render_valuation_explanation_table(
+    df: pd.DataFrame,
+    archetype_col: str = "valuation_archetype",
+    percent_cols: list | None = None,
+) -> None:
+    if df.empty:
+        components.html(
+            "<div style='font-family:DM Sans,system-ui,sans-serif;padding:0.75rem;color:#0f172a;'>No rows.</div>",
+            height=90,
+            scrolling=False,
+        )
+        return
+
+    if percent_cols is None:
+        percent_cols = [
+            "contribution_signal",
+            "learning_future_value_signal",
+            "sustainability_signal",
+            "progression_signal",
+            "sustainable_value_potential",
+            "interpretation_confidence",
+            "reliability_adjusted_value_potential",
+            "interpretation_risk",
+        ]
+
+    headers = list(df.columns)
+    header_html = "".join(
+        f"<th>{html.escape(h.replace('_', ' ').upper())}</th>" for h in headers
+    )
+    rows_html = []
+
+    for _, row in df.iterrows():
+        cells = []
+        for h in headers:
+            value = row.get(h, "")
+            if h == archetype_col:
+                label = str(value) if pd.notna(value) else ""
+                color = VALUATION_ARCHETYPE_COLORS.get(label, "#64748b")
+                fill = valuation_archetype_fill(color)
+                cells.append(
+                    f'<td><span class="archetype-pill" style="border-color:{color}; background-color:{fill}; color:{color};">{html.escape(label)}</span></td>'
+                )
+            elif h in percent_cols:
+                try:
+                    num = float(value)
+                    if pd.isna(num):
+                        display = "N/A"
+                    else:
+                        display = f"{num * 100:.1f} %"
+                except Exception:
+                    display = html.escape(str(value))
+                cells.append(f"<td>{display}</td>")
+            else:
+                cells.append(f"<td>{html.escape(str(value))}</td>")
+        rows_html.append("<tr>" + "".join(cells) + "</tr>")
+
+    frame_height = 760
+    html_doc = f"""
+    <html>
+    <head>
+        <style>
+            html, body {{ margin: 0; padding: 0; background: transparent; }}
+            body {{ font-family: 'DM Sans', system-ui, sans-serif; color: #0f172a; }}
+            .frame {{
+                height: 640px;
+                max-height: 640px;
+                overflow-y: auto;
+                overflow-x: auto;
+                border: 1px solid #e2e8f0;
+                border-radius: 12px;
+                background: #ffffff;
+                box-sizing: border-box;
+            }}
+            table {{
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 0.76rem;
+                min-width: 1180px;
+                table-layout: fixed;
+            }}
+            thead th {{
+                position: sticky;
+                top: 0;
+                z-index: 2;
+                background: #f8fafc;
+                font-size: 0.72rem;
+                letter-spacing: 0.05em;
+                text-transform: uppercase;
+                padding: 0.5rem 0.55rem;
+                border-bottom: 2px solid #e2e8f0;
+                text-align: left;
+                color: #334155;
+                white-space: normal;
+                word-break: normal;
+                overflow-wrap: normal;
+                hyphens: none;
+            }}
+            tbody td {{
+                padding: 0.42rem 0.55rem;
+                border-bottom: 1px solid #e2e8f0;
+                vertical-align: top;
+                line-height: 1.08;
+                word-break: break-word;
+                overflow-wrap: anywhere;
+            }}
+            tbody tr:last-child td {{ border-bottom: none; }}
+            tbody tr:hover td {{ background: #f8fafc; }}
+            thead th:nth-child(1), tbody td:nth-child(1) {{ width: 9.5rem; }}
+            thead th:nth-child(2), tbody td:nth-child(2) {{ width: 8.5rem; }}
+            thead th:nth-child(3), tbody td:nth-child(3) {{ width: 10.5rem; }}
+            thead th:nth-child(4), tbody td:nth-child(4) {{ width: 18rem; }}
+            thead th:nth-child(5), tbody td:nth-child(5),
+            thead th:nth-child(6), tbody td:nth-child(6),
+            thead th:nth-child(7), tbody td:nth-child(7),
+            thead th:nth-child(8), tbody td:nth-child(8),
+            thead th:nth-child(9), tbody td:nth-child(9),
+            thead th:nth-child(10), tbody td:nth-child(10),
+            thead th:nth-child(11), tbody td:nth-child(11),
+            thead th:nth-child(12), tbody td:nth-child(12) {{ width: 6.9rem; }}
+            .archetype-pill {{
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0.18rem 0.55rem;
+                border-radius: 999px;
+                border: 2px solid currentColor;
+                font-weight: 700;
+                font-size: 0.72rem;
+                line-height: 1.1;
+                white-space: normal;
+                text-align: center;
+            }}
+        </style>
+    </head>
+    <body>
+        <div class="frame">
+            <table>
+                <thead><tr>{header_html}</tr></thead>
+                <tbody>{''.join(rows_html)}</tbody>
+            </table>
+        </div>
+    </body>
+    </html>
+    """
+    components.html(html_doc, height=frame_height, scrolling=False)
+    return
+
+
 def manager_employee_coaching_questions(emp: pd.Series) -> pd.DataFrame:
     q = employee_manager_questions(emp).copy()
     if q.empty:
@@ -1557,6 +2604,12 @@ def show_manager_score_dictionary():
 def show_document_intelligence():
     section_header("Document Intelligence",
                    "Unstructured documents → structured context signals")
+    callout(
+        "<b>How to read this:</b> document themes are contextual evidence, not direct measures. "
+        "They help interpret why certain structured signals may appear — e.g. wellbeing language "
+        "supporting an absenteeism-risk interpretation.",
+        "info",
+    )
     st.markdown(
         "Qualitative material (engagement, governance, social, inclusion reports) is "
         "connected to the quantitative KPI system through theme extraction."
@@ -1578,23 +2631,18 @@ def show_document_intelligence():
             doc_theme.groupby("theme", as_index=False)["keyword_count"]
             .sum().sort_values("keyword_count", ascending=False)
         )
-        st.dataframe(top, use_container_width=True)
         fig = px.bar(top, x="theme", y="keyword_count",
                      title="Theme intensity across unstructured documents",
                      labels={"theme":"Theme","keyword_count":"Keyword mentions"})
+        fig.update_xaxes(tickfont=dict(weight="bold"))
+        fig.update_traces(textposition="outside", texttemplate="%{y}")
         st.plotly_chart(clean_chart(fig), use_container_width=True)
-        section_header("Document-level evidence")
-        fig = px.bar(doc_theme, x="theme", y="keyword_count", color="document",
-                     title="Detected themes by document",
-                     labels={"theme":"Theme","keyword_count":"Keyword mentions"})
-        st.plotly_chart(clean_chart(fig), use_container_width=True)
-        st.dataframe(doc_theme, use_container_width=True)
-        callout(
-            "<b>How to read this:</b> document themes are contextual evidence, not direct measures. "
-            "They help interpret why certain structured signals may appear — e.g. wellbeing language "
-            "supporting an absenteeism-risk interpretation.",
-            "info",
-        )
+        
+        section_header("Detected themes by document")
+        doc_theme_display = doc_theme.copy()
+        doc_theme_display.columns = [col.replace('_', ' ').upper() for col in doc_theme_display.columns]
+        st.dataframe(doc_theme_display, use_container_width=True)
+    
     if not doc_inventory.empty:
         with st.expander("📂 Document inventory"):
             st.dataframe(doc_inventory, use_container_width=True)
@@ -1710,20 +2758,14 @@ else:
 
     col_a, col_b, col_c = st.columns(3)
     with col_a:
-        st.markdown("""<div class="login-card">
-          <h4>From behaviour to value</h4>
-          <p>Captures employee actions, learning, and signals to understand how value is created over time.</p>
-        </div>""", unsafe_allow_html=True)
+        meaning_card("1", "From behaviour to value",
+                     "Captures employee actions, learning, and signals to understand how value is created over time.")
     with col_b:
-        st.markdown("""<div class="login-card">
-          <h4>Signals, not scores</h4>
-          <p>KPIs are indicators, not truth. They identify patterns, risks, and opportunities — not rank individuals.</p>
-        </div>""", unsafe_allow_html=True)
+        meaning_card("2", "Signals, not scores",
+                     "KPIs are indicators, not truth. They identify patterns, risks, and opportunities — not rank individuals.")
     with col_c:
-        st.markdown("""<div class="login-card">
-          <h4>Decision support system</h4>
-          <p>AI highlights segments, risks, and recommendations so managers and HR can act earlier and more effectively.</p>
-        </div>""", unsafe_allow_html=True)
+        meaning_card("3", "Decision support system",
+                     "AI highlights segments, risks, and recommendations so managers and HR can act earlier and more effectively.")
 
     st.markdown("")
     section_header("Demo login IDs")
@@ -1755,7 +2797,7 @@ if role == "Employee":
     employee_focus = build_employee_focus(emp)
 
     tab1, tab2, tab3, tab4 = st.tabs(
-        ["📊 My Situation", "🎯 My Next Steps", "✍️ Add Context", "❓ Help & FAQ"]
+        ["My Situation", "My Next Steps", "Add Context", "Help & FAQ"]
     )
 
     # ── TAB 1 : My Situation ─────────────────────────────────────────────────
@@ -1807,16 +2849,26 @@ if role == "Employee":
 
             st.markdown("<br>", unsafe_allow_html=True)
             with st.expander("📖 See exactly what each score means", expanded=True):
-                wrapped_table(employee_signal_explanation(emp))
+                wrapped_table_with_level_pills(employee_signal_explanation(emp), level_col="Level")
 
             section_header("My profile summary")
             p1,p2,p3 = st.columns(3)
             with p1:
-                info_card("My team / entity",
-                    str(emp.get(department_col,"Not available")) if department_col else "Not available")
+                                team_label = str(emp.get(department_col,"Not available")) if department_col else "Not available"
+                                st.markdown(f"""
+                                <div class="info-card info-card--profile-snapshot">
+                                    <h4>My team / entity</h4>
+                                    <div class="profile-oval-wrapper"><div class="profile-oval-badge profile-oval-badge--blue profile-oval-badge--compact">{html.escape(team_label)}</div></div>
+                                </div>
+                                """, unsafe_allow_html=True)
             with p2:
-                info_card("Current situation label",
-                    str(emp.get("valuation_archetype","N/A")))
+                                current_label = str(emp.get("valuation_archetype","N/A"))
+                                st.markdown(f"""
+                                <div class="info-card info-card--profile-snapshot">
+                                    <h4>Current situation label</h4>
+                                    <div class="profile-oval-wrapper"><div class="profile-oval-badge profile-oval-badge--yellow profile-oval-badge--compact">{html.escape(current_label)}</div></div>
+                                </div>
+                                """, unsafe_allow_html=True)
             with p3:
                 info_card("Question to discuss",
                     str(emp.get("blue_line_question","N/A")))
@@ -1824,19 +2876,28 @@ if role == "Employee":
             section_header("Value signals overview")
             v1,v2,v3 = st.columns(3)
             with v1:
-                stat_card("Overall signal",
-                    fmt_score(_get(emp,"sustainable_value_potential")),
-                    "Combined contribution, learning, sustainability & progression")
+                signal_progress_card(
+                    "Overall signal",
+                    _get(emp,"sustainable_value_potential"),
+                    "Combined contribution, learning, sustainability, and progression signals.",
+                    badge_labels=("Low performance", "Stable", "Great performance"),
+                )
             with v2:
-                stat_card("Confidence-adjusted signal",
-                    fmt_score(_get(emp,"reliability_adjusted_value_potential")),
-                    "Overall signal reduced when data visibility is incomplete", accent="indigo")
+                signal_progress_card(
+                    "Confidence-adjusted signal",
+                    _get(emp,"reliability_adjusted_value_potential"),
+                    "Overall signal adjusted downward when data visibility is incomplete.",
+                    badge_labels=("Low performance", "Stable", "Great performance"),
+                )
             with v3:
                 bal = _get(emp,"sustainability_balance")
-                stat_card("Learning vs pressure balance",
-                    fmt_score(bal) if bal is not None else "N/A",
-                    "Learning intensity − absenteeism risk. Positive = learning stronger than pressure.",
-                    accent="warn" if (bal is not None and bal < 0) else "primary")
+                bal_norm = None if bal is None else max(0.0, min(1.0, (bal + 1) / 2))
+                signal_progress_card(
+                    "Learning vs pressure balance",
+                    bal_norm,
+                    "Scaled view of learning intensity minus absenteeism risk. Positive balance indicates learning is stronger than pressure.",
+                    badge_labels=("Low performance", "Stable", "Great performance"),
+                )
 
             st.info(employee_focus)
 
@@ -1885,19 +2946,28 @@ Managers and HR remain responsible for all decisions. AI-generated signals are d
 
             d1,d2,d3 = st.columns(3)
             with d1:
-                stat_card("Development signal",
-                    fmt_score(_get(emp,"learning_intensity_score")),
-                    "Visible formal learning and training activity")
+                signal_progress_card(
+                    "Development signal",
+                    _get(emp,"learning_intensity_score"),
+                    "Visible formal learning and training activity. Lower values can indicate missing records or low development opportunity.",
+                    badge_labels=("Low performance", "Stable", "Great performance"),
+                )
             with d2:
-                stat_card("Annual review signal",
-                    fmt_score(_get(emp,"performance_score")),
-                    "Prepare examples before your actual review conversation", accent="indigo")
+                signal_progress_card(
+                    "Annual review signal",
+                    _get(emp,"performance_score"),
+                    "Proxy from review/performance records. Use examples in conversations to contextualize.",
+                    badge_labels=("Low performance", "Stable", "Great performance"),
+                )
             with d3:
                 bal = _get(emp,"sustainability_balance")
-                stat_card("Learning vs pressure balance",
-                    fmt_score(bal) if bal is not None else "N/A",
+                bal_norm = None if bal is None else max(0.0, min(1.0, (bal + 1) / 2))
+                signal_progress_card(
+                    "Learning vs pressure balance",
+                    bal_norm,
                     "Negative = continuity pressure stronger than visible learning",
-                    accent="warn" if (bal is not None and bal < 0) else "primary")
+                    badge_labels=("Low performance", "Stable", "Great performance"),
+                )
 
             callout(
                 "<b>Sustainability balance formula:</b> learning intensity score − absenteeism risk score. "
@@ -1919,7 +2989,8 @@ Managers and HR remain responsible for all decisions. AI-generated signals are d
 
             section_header("Questions for my manager",
                 "Generated from this employee's actual signals")
-            st.dataframe(employee_manager_questions(emp), use_container_width=True, hide_index=True)
+            qdf = employee_manager_questions(emp)
+            wrapped_table_with_level_pills(qdf, level_col="Priority")
 
             callout(
                 "<b>Your development drives value:</b> value is not only performance — it comes from "
@@ -2046,79 +3117,162 @@ elif role == "Manager":
         )
 
     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
-        "🏠 Team Dashboard",
-        "🔍 Employee Drill-Down",
-        "📈 Team Signals",
-        "📝 Manager Notes",
-        "✅ Action Plan",
-        "❓ Help & FAQ",
+        "Team Dashboard",
+        "Employee Drill-Down",
+        "Team Signals",
+        "Manager Notes",
+        "Action Plan",
+        "Help & FAQ",
     ])
 
     # ── TAB 1 ─────────────────────────────────────────────────────────────────
     with tab1:
-        section_header(f"Team: {selected_department}", "What this helps me answer")
-        st.dataframe(usefulness_answer("Manager"), use_container_width=True, hide_index=True)
-
-        team_summary = manager_team_plain_language_summary(team)
-        section_header("Manager interpretation")
-        s1,s2,s3 = st.columns(3)
-        with s1:
-            info_card("What the dashboard sees", team_summary["situation"])
-        with s2:
-            info_card("Main management risk",    team_summary["risk"])
-        with s3:
-            info_card("Recommended next step",  team_summary["next_step"])
-
-        section_header("Team-level questions to investigate")
-        st.dataframe(manager_dynamic_questions(team), use_container_width=True, hide_index=True)
-
-        section_header("Key team metrics")
-        c1,c2,c3,c4 = st.columns(4)
-        with c1: stat_card("Team size",                  f"{len(team):,}")
-        with c2: stat_card("Avg value potential",        safe_mean(team,"sustainable_value_potential"))
-        with c3: stat_card("Avg future value signal",    safe_mean(team,"learning_future_value_signal"), accent="indigo")
-        with c4: stat_card("Avg interpretation confidence", safe_mean(team,"interpretation_confidence"), accent="warn")
-
-        section_header("Team profile snapshot")
-        main_seg  = (team["segment_name"].mode().iloc[0]
-                     if "segment_name" in team.columns and not team["segment_name"].mode().empty
-                     else "N/A")
-        high_risk = (int((team["risk_prediction_label"]=="High").sum())
-                     if "risk_prediction_label" in team.columns else "N/A")
-        low_data  = (int(team["low_data_flag"].sum())
-                     if "low_data_flag" in team.columns else "N/A")
-
-        snap1,snap2,snap3 = st.columns(3)
-        with snap1: info_card("Main team profile",            str(main_seg))
-        with snap2: info_card("High continuity-risk profiles",str(high_risk))
-        with snap3: info_card("Low-data profiles",            str(low_data))
-
-        if "segment_name" in team.columns:
-            section_header("Team segment distribution")
-            seg_counts = (team["segment_name"].value_counts()
-                         .rename_axis("Team profile").reset_index(name="Employees"))
-            fig = px.bar(seg_counts, x="Team profile", y="Employees",
-                         title="Team distribution across AI-generated profiles",
-                         color="Team profile")
-            st.plotly_chart(clean_chart(fig), use_container_width=True)
-
-        if "valuation_archetype" in team.columns:
-            section_header("Blue-Line valuation archetypes")
-            arch_counts = (team["valuation_archetype"].value_counts()
-                          .rename_axis("Valuation archetype").reset_index(name="Employees"))
-            fig = px.bar(arch_counts, x="Valuation archetype", y="Employees",
-                         title="Team Blue-Line valuation archetypes")
-            st.plotly_chart(clean_chart(fig), use_container_width=True)
-
-        show_caceis_value_lens(team, "Team CACEIS value lens")
         callout(
             "<b>How to use this view:</b> read team signals as prompts for support and development. "
             "They are not a ranking of employees or a substitute for manager judgment.",
             "gov",
         )
+        with st.expander("What does this help me answer ?", expanded=False):
+            st.dataframe(usefulness_answer("Manager"), use_container_width=True, hide_index=True)
+
+        team_summary = manager_team_plain_language_summary(team)
+        section_header("Manager interpretation")
+        if selected_department:
+            st.markdown(
+                f"<div class='team-profile-badge'>Current team: <strong>{html.escape(str(selected_department))}</strong></div>",
+                unsafe_allow_html=True,
+            )
+        m1,m2,m3 = st.columns(3)
+        with m1:
+            meaning_card("1","What the dashboard sees", team_summary["situation"])
+        with m2:
+            meaning_card("2","Main management risk",    team_summary["risk"])
+        with m3:
+            meaning_card("3","Recommended next step",  team_summary["next_step"])
+
+        show_caceis_value_lens(team, "Team CACEIS value lens")
+
+        section_header("Team-level questions to investigate")
+        dq = manager_dynamic_questions(team)
+        st.markdown(render_questions_table_with_badges(dq, priority_col="Priority"), unsafe_allow_html=True)
+
+        section_header("Key team metrics")
+        st.markdown(f"<div class='team-size-badge'>Team size: <strong>{len(team):,}</strong></div>", unsafe_allow_html=True)
+        c1,c2,c3,c4 = st.columns(4)
+        with c1:
+            signal_progress_card(
+                "Avg contribution signal",
+                safe_mean(team, "contribution_signal"),
+                "Average observable contribution signal across the team. This is a proxy from available performance information, not a ranking or performance score.",
+                badge_labels=("Low performance", "Stable", "Great performance"),
+            )
+        with c2:
+            signal_progress_card(
+                "Avg future value signal",
+                safe_mean(team, "learning_future_value_signal"),
+                "Average visible learning and development activity across the team. Low values can reflect missing records, limited access, or lower observed activity.",
+                badge_labels=("Low performance", "Stable", "Great performance"),
+            )
+        with c3:
+            signal_progress_card(
+                "Avg sustainability signal",
+                safe_mean(team, "sustainability_signal"),
+                "Average continuity and workload balance signal for the team. Higher values indicate lower observed pressure, not a wellbeing diagnosis.",
+                badge_labels=("Low performance", "Stable", "Great performance"),
+            )
+        with c4:
+            signal_progress_card(
+                "Avg interpretation confidence",
+                safe_mean(team, "interpretation_confidence"),
+                "Average data completeness and reliability for the team's records. If this is low, treat the signals as tentative and validate the underlying data first.",
+                badge_labels=("Low performance", "Stable", "Great performance"),
+            )
+        st.markdown("<br style='margin-bottom: 1.5rem;'>", unsafe_allow_html=True)
+
+        section_header("Team profile snapshot")
+        main_seg = (
+            team["segment_name"].mode().iloc[0]
+            if "segment_name" in team.columns and not team["segment_name"].mode().empty
+            else "N/A"
+        )
+        high_risk = (
+            int((team["risk_prediction_label"] == "High").sum())
+            if "risk_prediction_label" in team.columns
+            else "N/A"
+        )
+        low_data = (
+            int(team["low_data_flag"].sum()) if "low_data_flag" in team.columns else "N/A"
+        )
+
+        snap1, snap2, snap3 = st.columns(3)
+        with snap1:
+            st.markdown(
+                f"""
+            <div class="info-card info-card--profile-snapshot">
+              <h4>Main team profile</h4>
+              <div class="profile-oval-wrapper"><div class="profile-oval-badge profile-oval-badge--yellow profile-oval-badge--compact">{html.escape(str(main_seg))}</div></div>
+            </div>
+            """,
+                unsafe_allow_html=True,
+            )
+        with snap2:
+            st.markdown(
+                f"""
+            <div class="info-card info-card--profile-snapshot">
+              <h4>High continuity-risk profiles</h4>
+              <div class="profile-oval-wrapper"><div class="profile-oval-badge profile-oval-badge--red profile-oval-badge--compact">{html.escape(str(high_risk))}</div></div>
+            </div>
+            """,
+                unsafe_allow_html=True,
+            )
+        with snap3:
+            st.markdown(
+                f"""
+            <div class="info-card info-card--profile-snapshot">
+              <h4>Low-data profiles</h4>
+              <div class="profile-oval-wrapper"><div class="profile-oval-badge profile-oval-badge--red profile-oval-badge--compact">{html.escape(str(low_data))}</div></div>
+            </div>
+            """,
+                unsafe_allow_html=True,
+            )
+
+        chart_col_1, chart_col_2 = st.columns(2)
+
+        if "segment_name" in team.columns:
+            with chart_col_1:
+                section_header("Team segment distribution")
+                seg_counts = (team["segment_name"].value_counts()
+                             .rename_axis("Team profile").reset_index(name="Employees"))
+                fig = px.pie(
+                    seg_counts,
+                    names="Team profile",
+                    values="Employees",
+                    title="Team distribution across AI-generated profiles",
+                    hole=0.35,
+                )
+                st.plotly_chart(clean_chart(fig), use_container_width=True)
+
+        if "valuation_archetype" in team.columns:
+            with chart_col_2:
+                section_header("Blue-Line valuation archetypes")
+                arch_counts = (team["valuation_archetype"].value_counts()
+                              .rename_axis("Valuation archetype").reset_index(name="Employees"))
+                fig = px.pie(
+                    arch_counts,
+                    names="Valuation archetype",
+                    values="Employees",
+                    title="Team Blue-Line valuation archetypes",
+                    hole=0.35,
+                )
+                st.plotly_chart(clean_chart(fig), use_container_width=True)
 
     # ── TAB 2 ─────────────────────────────────────────────────────────────────
     with tab2:
+        callout(
+            "<b>How to read this:</b> the drill-down combines quantitative signals with human context. "
+            "It should support a coaching conversation, not produce an automatic judgment.",
+            "gov",
+        )
         section_header("Employee Drill-Down",
             "Select one employee to see a granular profile for coaching conversations.")
         if team.empty:
@@ -2129,19 +3283,50 @@ elif role == "Manager":
             ed = team[team["display_employee"] == sel_emp].iloc[0]
 
             c1,c2,c3,c4 = st.columns(4)
-            with c1: stat_card("Contribution signal",     fmt_score(_get(ed,"contribution_signal","performance_score")))
-            with c2: stat_card("Development signal",      fmt_score(_get(ed,"learning_future_value_signal","learning_intensity_score")), accent="indigo")
-            with c3: stat_card("Continuity risk",         fmt_score(_get(ed,"absenteeism_risk_score")), accent="danger")
-            with c4: stat_card("Data confidence",         fmt_score(_get(ed,"interpretation_confidence","kpi_reliability_score")), accent="warn")
+            with c1:
+                signal_progress_card(
+                    "Contribution signal",
+                    _get(ed,"contribution_signal","performance_score"),
+                    "Observable contribution signal from available performance information. "
+                    "Use this as a discussion input, not as a final judgment.",
+                    badge_labels=("Low", "Medium", "High"),
+                )
+            with c2:
+                signal_progress_card(
+                    "Development signal",
+                    _get(ed,"learning_future_value_signal","learning_intensity_score"),
+                    "Visible learning and development activity for this employee. "
+                    "Lower values can also reflect missing or incomplete records.",
+                    badge_labels=("Low", "Medium", "High"),
+                )
+            with c3:
+                signal_progress_card(
+                    "Continuity risk",
+                    _get(ed,"absenteeism_risk_score"),
+                    "Continuity pressure signal derived from absence-related patterns. "
+                    "Treat as an early prompt for context-checking, not a diagnosis.",
+                    badge_labels=("Low", "Medium", "High"),
+                )
+            with c4:
+                signal_progress_card(
+                    "Data confidence",
+                    _get(ed,"interpretation_confidence","kpi_reliability_score"),
+                    "Confidence in data completeness and reliability for interpretation. "
+                    "If low, validate context and data quality before acting.",
+                    badge_labels=("Low", "Medium", "High"),
+                )
 
             section_header("Profile interpretation")
             p1,p2,p3 = st.columns(3)
-            with p1: info_card("Current situation",         str(_get(ed,"valuation_archetype","segment_name",default="N/A")))
-            with p2: info_card("Continuity label",          str(ed.get("risk_prediction_label","N/A")))
-            with p3: info_card("Recommended experiment",    str(ed.get("recommended_action","N/A")))
+            current_situation = str(_get(ed,"valuation_archetype","segment_name",default="N/A"))
+            continuity_label = str(ed.get("risk_prediction_label","N/A"))
+            recommended_experiment = str(ed.get("recommended_action","N/A"))
+            with p1: profile_snapshot_card("Current situation", current_situation)
+            with p2: profile_snapshot_card("Continuity label", continuity_label)
+            with p3: info_card("Recommended experiment", recommended_experiment, card_class="info-card--profile-snapshot")
 
             section_header("Coaching questions generated from this employee's data")
-            st.dataframe(manager_employee_coaching_questions(ed), use_container_width=True, hide_index=True)
+            st.markdown(render_coaching_questions_table(manager_employee_coaching_questions(ed), priority_col="Priority"), unsafe_allow_html=True)
 
             # Context logs
             emp_log = load_log("employee_context_log.csv")
@@ -2154,25 +3339,26 @@ elif role == "Manager":
                           else pd.DataFrame())
 
             section_header("Employee context inputs")
-            st.dataframe(emp_inputs.sort_values("date",ascending=False) if not emp_inputs.empty else pd.DataFrame(),
-                         use_container_width=True, hide_index=True)
             if emp_inputs.empty:
                 st.info("No employee context inputs saved for this employee yet.")
+            else:
+                st.dataframe(emp_inputs.sort_values("date",ascending=False), use_container_width=True, hide_index=True)
 
             section_header("Manager notes for this employee")
-            st.dataframe(mgr_notes.sort_values("date",ascending=False) if not mgr_notes.empty else pd.DataFrame(),
-                         use_container_width=True, hide_index=True)
             if mgr_notes.empty:
                 st.info("No manager notes saved for this employee yet.")
+            else:
+                st.dataframe(mgr_notes.sort_values("date",ascending=False), use_container_width=True, hide_index=True)
 
-            callout(
-                "<b>How to read this:</b> the drill-down combines quantitative signals with human context. "
-                "It should support a coaching conversation, not produce an automatic judgment.",
-                "gov",
-            )
+            # callout moved to top of tab
 
     # ── TAB 3 ─────────────────────────────────────────────────────────────────
     with tab3:
+        callout(
+            "<b>How to interpret these signals:</b> these are aggregated indicators to guide prioritisation. "
+            "Use them as conversation starters rather than absolute measures.",
+            "gov",
+        )
         section_header("Team Signals",
             "Identify where the team may need support: workload, learning access, or data quality.")
 
@@ -2181,16 +3367,27 @@ elif role == "Manager":
             if "risk_prediction_label" in team.columns:
                 risk_counts = (team["risk_prediction_label"].value_counts()
                               .rename_axis("Continuity label").reset_index(name="Employees"))
-                fig = px.bar(risk_counts, x="Continuity label", y="Employees",
-                             title="Continuity-risk distribution",
-                             color="Continuity label",
-                             color_discrete_map={"High":"#ef4444","Medium":"#f59e0b","Low":"#22c55e"})
+                fig = px.pie(
+                    risk_counts,
+                    names="Continuity label",
+                    values="Employees",
+                    title="Continuity-risk distribution",
+                    hole=0.45,
+                    color="Continuity label",
+                    color_discrete_map={"High":"#ef4444","Medium":"#f59e0b","Low":"#22c55e"},
+                )
                 st.plotly_chart(clean_chart(fig), use_container_width=True)
         with sc2:
             if "sustainability_balance" in team.columns:
-                fig = px.histogram(team, x="sustainability_balance", nbins=25,
-                                   title="Sustainability balance distribution",
-                                   labels={"sustainability_balance":"Learning vs pressure balance"})
+                fig = px.histogram(
+                    team,
+                    x="sustainability_balance",
+                    nbins=25,
+                    color="segment_name" if "segment_name" in team.columns else None,
+                    color_discrete_map=segment_color_map(team["segment_name"]) if "segment_name" in team.columns else None,
+                    title="Sustainability balance distribution",
+                    labels={"sustainability_balance":"Learning vs pressure balance"},
+                )
                 st.plotly_chart(clean_chart(fig), use_container_width=True)
 
         section_header("Coaching attention list",
@@ -2210,13 +3407,16 @@ elif role == "Manager":
         if priority.empty:
             st.success("No high-priority coaching alerts detected for this team.")
         else:
-            st.dataframe(priority[coaching_cols].head(15), use_container_width=True, hide_index=True)
+            st.markdown(
+                render_coaching_questions_table(
+                    priority[coaching_cols].head(15),
+                    priority_col="risk_prediction_label",
+                    compact=True,
+                ),
+                unsafe_allow_html=True,
+            )
 
-        callout(
-            "<b>Manager responsibility:</b> these signals should trigger conversations, not conclusions. "
-            "Before acting, check context, workload, role constraints, and data reliability.",
-            "gov",
-        )
+        # callout moved to top of tab
 
     # ── TAB 4 ─────────────────────────────────────────────────────────────────
     with tab4:
@@ -2274,15 +3474,27 @@ elif role == "Manager":
 
     # ── TAB 5 ─────────────────────────────────────────────────────────────────
     with tab5:
+        callout(
+            "<b>How to use this plan:</b> convert signals into small, testable management experiments. "
+            "Track actions, owners, and short-term checks rather than assuming immediate outcomes.",
+            "gov",
+        )
         section_header("Team Action Plan",
             "Team signals → practical management actions")
+        with st.expander("How is this action plan generated ?", expanded=False):
+            st.markdown(
+                "The first table is generated from your team’s actual signals. The second table summarizes recommendation outputs when available. Actions should be treated as experiments: try a support action, observe whether signals improve, and add context."
+            )
 
         section_header("Dynamic management questions & experiments")
         action_plan = manager_dynamic_questions(team).rename(columns={
             "Manager question":"Management question / experiment",
             "Why this appears":"Signal behind it",
         })
-        st.dataframe(action_plan, use_container_width=True, hide_index=True)
+        st.markdown(
+            render_questions_table_with_badges(action_plan, priority_col="Priority", compact=True),
+            unsafe_allow_html=True,
+        )
 
         section_header("Team-level recommendation summary")
         team_recs = (
@@ -2300,19 +3512,20 @@ elif role == "Manager":
 
         section_header("Practical coaching loop")
         lp1,lp2,lp3,lp4 = st.columns(4)
-        with lp1: info_card("1. Check reliability",   "Confirm whether the data is complete enough to interpret.")
-        with lp2: info_card("2. Identify pattern",    "Look for workload, learning, or development gaps.")
-        with lp3: info_card("3. Discuss context",     "Use the signal as a starting point with employees.")
-        with lp4: info_card("4. Act and reassess",    "Adjust support, training, or workload — then monitor evolution.")
+        with lp1: meaning_card("1", "Check reliability",   "Confirm whether the data is complete enough to interpret.")
+        with lp2: meaning_card("2", "Identify pattern",    "Look for workload, learning, or development gaps.")
+        with lp3: meaning_card("3", "Discuss context",     "Use the signal as a starting point with employees.")
+        with lp4: meaning_card("4", "Act and reassess",    "Adjust support, training, or workload — then monitor evolution.")
 
-        callout(
-            "<b>Bottom-up value:</b> managers create value by improving the conditions that allow "
-            "employees to learn, contribute, and sustain performance over time.",
-            "gov",
-        )
+        # callout moved to top of tab
 
     # ── TAB 6 ─────────────────────────────────────────────────────────────────
     with tab6:
+        callout(
+            "<b>Manager principle:</b> the dashboard should help managers improve the work system "
+            "around people — not mechanically evaluate people.",
+            "gov",
+        )
         section_header("Manager Help & FAQ")
         manager_faq = [
             ("What is the manager supposed to understand first?",
@@ -2342,11 +3555,7 @@ elif role == "Manager":
             {"Step":"4. Add context",              "Manager action":"Use Manager Notes when structured data misses important information."},
             {"Step":"5. Run a small experiment",   "Manager action":"Try a workload, training, mentoring, or data-quality action and monitor changes."},
         ]))
-        callout(
-            "<b>Manager principle:</b> the dashboard should help managers improve the work system "
-            "around people — not mechanically evaluate people.",
-            "gov",
-        )
+        
 
 
 # ════════════════════════════════════════════════════════════════════════════════
@@ -2395,26 +3604,63 @@ elif role == "HR":
     ).drop(columns=["_pri_num"])
 
     tab1,tab2,tab3,tab4,tab5,tab6,tab7 = st.tabs([
-        "🎯 Action Center",
-        "📊 Blue-Line Valuation",
-        "🌐 Workforce Explorer",
-        "🔍 Drill-Down",
-        "🤖 AI Insights",
-        "📂 Data & Documents",
-        "⚖️ Principles",
+        "Action Center",
+        "Blue-Line Valuation",
+        "Workforce Explorer",
+        "Drill-Down",
+        "AI Insights",
+        "Data & Documents",
+        "Principles",
     ])
 
     # ── Action Center ─────────────────────────────────────────────────────────
     with tab1:
+        with st.expander("What questions can be asked ?", expanded=False):
+            st.dataframe(usefulness_answer("HR"), use_container_width=True, hide_index=True)
+
         section_header("HR Action Center", "Who needs attention, why, and what to do next")
-        st.dataframe(usefulness_answer("HR"), use_container_width=True, hide_index=True)
+
+        employees_mapped = len(employee_value)
+        high_priority_count = int((hr_priority["priority_level"] == "High").sum())
+        high_continuity_count = int(_high_risk.sum())
+        low_reliability_count = int(_low_rel.sum())
 
         c1,c2,c3,c4 = st.columns(4)
-        with c1: stat_card("Employees mapped", f"{len(employee_value):,}")
-        with c2: stat_card("High-priority profiles",
-                           f"{int((hr_priority['priority_level']=='High').sum()):,}", accent="danger")
-        with c3: stat_card("High continuity risk", f"{int(_high_risk.sum()):,}", accent="warn")
-        with c4: stat_card("Low reliability",      f"{int(_low_rel.sum()):,}",   accent="indigo")
+        with c1: stat_card(
+            "Employees mapped",
+            f"{employees_mapped:,}",
+            accent="primary",
+            card_class="stat-card--mid",
+            value_html=f'<span class="profile-oval-badge profile-oval-badge--blue">{html.escape(f"{employees_mapped:,}")}</span>',
+        )
+        with c2: stat_card(
+            "High-priority profiles",
+            f"{high_priority_count:,}",
+            accent="danger",
+            card_class="stat-card--mid",
+            value_html=f'<span class="profile-oval-badge profile-oval-badge--red">{html.escape(f"{high_priority_count:,}")}</span>',
+        )
+        with c3: stat_card(
+            "High continuity risk",
+            f"{high_continuity_count:,}",
+            accent="danger",
+            card_class="stat-card--mid",
+            value_html=f'<span class="profile-oval-badge profile-oval-badge--red">{html.escape(f"{high_continuity_count:,}")}</span>',
+        )
+        with c4: stat_card(
+            "Low reliability",
+            f"{low_reliability_count:,}",
+            accent="warn",
+            card_class="stat-card--mid",
+            value_html=f'<span class="profile-oval-badge profile-oval-badge--yellow">{html.escape(f"{low_reliability_count:,}")}</span>',
+        )
+
+        with st.expander("How to use this table ?", expanded=False):
+            callout(
+                "<b>How to use this table:</b> these are not automatic HR decisions. "
+                "They are profiles that deserve context checking, manager discussion, or data validation.",
+                "gov",
+            )
 
         section_header("Top profiles requiring attention")
         priority_cols = [c for c in [
@@ -2424,11 +3670,23 @@ elif role == "HR":
             "sustainability_balance","performance_score",
             "kpi_reliability_score","recommended_action",
         ] if c and c in hr_priority.columns]
-        st.dataframe(hr_priority[priority_cols].head(30), use_container_width=True, hide_index=True)
-        callout(
-            "<b>How to use this table:</b> these are not automatic HR decisions. "
-            "They are profiles that deserve context checking, manager discussion, or data validation.",
-            "gov",
+        st.markdown(
+            render_coaching_questions_table(
+                hr_priority[priority_cols].head(30),
+                priority_col="priority_level",
+                compact=True,
+                uppercase_headers=True,
+                segment_col="segment_name",
+                controls=False,
+                percent_cols=[
+                    "absenteeism_risk_score",
+                    "learning_intensity_score",
+                    "sustainability_balance",
+                    "performance_score",
+                    "kpi_reliability_score",
+                ],
+            ),
+            unsafe_allow_html=True,
         )
 
         section_header("Why profiles are flagged")
@@ -2439,49 +3697,114 @@ elif role == "HR":
                      color="Priority reason")
         st.plotly_chart(clean_chart(fig), use_container_width=True)
 
+        section_header("Recommendation summary")
         if not recommendation_df.empty and "recommendation" in recommendation_df.columns:
-            section_header("Recommendation summary")
-            rec_summary = (recommendation_df["recommendation"].value_counts()
-                          .rename_axis("Recommendation").reset_index(name="Profiles"))
-            fig = px.bar(rec_summary.head(10), x="Profiles", y="Recommendation",
-                         orientation="h", title="Most frequent recommended actions")
-            st.plotly_chart(clean_chart(fig), use_container_width=True)
-            st.dataframe(rec_summary, use_container_width=True, hide_index=True)
+            rec_summary = (
+                recommendation_df["recommendation"]
+                .value_counts()
+                .rename_axis("Recommendation")
+                .reset_index(name="Profiles")
+            )
+            show_summary_lens(rec_summary, label_col="Recommendation", count_col="Profiles", total_label="Total profiles")
+        elif "recommended_action" in recommendation_df.columns:
+            rec_summary = (
+                recommendation_df["recommended_action"]
+                .value_counts()
+                .rename_axis("Recommendation")
+                .reset_index(name="Profiles")
+            )
+            show_summary_lens(rec_summary, label_col="Recommendation", count_col="Profiles", total_label="Total profiles")
+        else:
+            st.info("No recommendations available.")
 
     # ── Blue-Line Valuation ───────────────────────────────────────────────────
     with tab2:
-        section_header("Blue-Line Valuation",
-            "Sustainable value potential estimated from observable signals — not employee worth.")
         callout(
             "<b>Blue-Line principle:</b> indicators are not the objective. They are learning signals "
             "that help CACEIS understand which conditions may create, sustain, or destroy long-term value.",
             "gov",
         )
+        section_header("Blue-Line Valuation",
+            "Sustainable value potential estimated from observable signals — not employee worth.")
 
         c1,c2,c3,c4 = st.columns(4)
-        with c1: stat_card("Avg contribution signal",        safe_mean(employee_value,"contribution_signal"))
-        with c2: stat_card("Avg future value signal",        safe_mean(employee_value,"learning_future_value_signal"), accent="indigo")
-        with c3: stat_card("Avg sustainability signal",      safe_mean(employee_value,"sustainability_signal"),        accent="warn")
-        with c4: stat_card("Avg interpretation confidence",  safe_mean(employee_value,"interpretation_confidence"))
+        with c1:
+            signal_progress_card(
+                "Avg contribution signal",
+                safe_mean(employee_value, "contribution_signal"),
+                "Average contribution-related signal across employees.",
+                badge_labels=("Low performance", "Stable", "High performance"),
+            )
+        with c2:
+            signal_progress_card(
+                "Avg future value signal",
+                safe_mean(employee_value, "learning_future_value_signal"),
+                "Average visible learning and development activity.",
+                badge_labels=("Low performance", "Stable", "High performance"),
+            )
+        with c3:
+            signal_progress_card(
+                "Avg sustainability signal",
+                safe_mean(employee_value, "sustainability_signal"),
+                "Average continuity and sustainability signal.",
+                badge_labels=("Low performance", "Stable", "High performance"),
+            )
+        with c4:
+            signal_progress_card(
+                "Avg interpretation confidence",
+                safe_mean(employee_value, "interpretation_confidence"),
+                "Average confidence in data completeness and interpretability.",
+                badge_labels=("Low performance", "Stable", "High performance"),
+            )
 
         section_header("Valuation archetype distribution")
         arch_counts = (employee_value["valuation_archetype"].value_counts()
                       .rename_axis("Valuation archetype").reset_index(name="Employees"))
+        def _wrap_axis_label(label: str, width: int = 16) -> str:
+            words = str(label).split()
+            if len(words) <= 2:
+                return str(label)
+            lines = []
+            current = []
+            current_len = 0
+            for word in words:
+                next_len = current_len + len(word) + (1 if current else 0)
+                if current and next_len > width:
+                    lines.append(" ".join(current))
+                    current = [word]
+                    current_len = len(word)
+                else:
+                    current.append(word)
+                    current_len = next_len
+            if current:
+                lines.append(" ".join(current))
+            return "<br>".join(lines)
+
+        wrapped_tick_text = [f"<b>{_wrap_axis_label(label)}</b>" for label in arch_counts["Valuation archetype"]]
         fig = px.bar(arch_counts, x="Valuation archetype", y="Employees",
                      title="Distribution of Blue-Line valuation archetypes",
-                     color="Valuation archetype")
+                     color="Valuation archetype",
+                     color_discrete_map=VALUATION_ARCHETYPE_COLORS,
+                     text="Employees")
+        fig.update_traces(textposition="outside", texttemplate="%{text}", cliponaxis=False)
+        fig.update_layout(showlegend=False)
+        fig.update_xaxes(tickmode="array", tickvals=arch_counts["Valuation archetype"], ticktext=wrapped_tick_text, tickangle=0)
+        fig.update_xaxes(title_font=dict(color="#334155", family="DM Sans, system-ui, sans-serif", size=13), tickfont=dict(color="#334155", family="DM Sans, system-ui, sans-serif", size=11))
+        fig.update_yaxes(title="Employees", rangemode="tozero", title_font=dict(color="#334155", family="DM Sans, system-ui, sans-serif", size=13), tickfont=dict(color="#334155", family="DM Sans, system-ui, sans-serif", size=11))
         st.plotly_chart(clean_chart(fig), use_container_width=True)
-        st.dataframe(arch_counts, use_container_width=True, hide_index=True)
 
         section_header("Value potential vs interpretation confidence")
         fig = px.scatter(employee_value,
             x="sustainable_value_potential", y="interpretation_confidence",
             color="valuation_archetype",
+            color_discrete_map=VALUATION_ARCHETYPE_COLORS,
             hover_data=[c for c in ["display_employee",department_col,
                                     "blue_line_question","interpretation_risk"]
                         if c and c in employee_value.columns],
             title="Sustainable value potential must be read alongside data confidence",
         )
+        fig.update_xaxes(title="SUSTAINABLE VALUE POTENTIAL", tickformat=".0%")
+        fig.update_yaxes(title="INTERPRETATION CONFIDENCE", tickformat=".0%")
         st.plotly_chart(clean_chart(fig), use_container_width=True)
 
         section_header("Valuation explanation table")
@@ -2491,7 +3814,7 @@ elif role == "HR":
             "progression_signal","sustainable_value_potential","interpretation_confidence",
             "reliability_adjusted_value_potential","interpretation_risk",
         ] if c and c in employee_value.columns]
-        st.dataframe(employee_value[exp_cols], use_container_width=True, hide_index=True)
+        render_valuation_explanation_table(employee_value[exp_cols], archetype_col="valuation_archetype")
         callout(
             "<b>Interpretation rule:</b> a high value potential with low confidence is not a strong "
             "conclusion. It is a prompt to improve data quality or validate context.",
@@ -2525,26 +3848,102 @@ elif role == "HR":
                 filtered = filtered[filtered[department_col].isin(sel_depts)]
 
         c1,c2,c3,c4 = st.columns(4)
-        with c1: stat_card("Selected employees",   f"{len(filtered):,}")
-        with c2: stat_card("Avg value proxy",      safe_mean(filtered,"human_capital_value_proxy"))
-        with c3: stat_card("Avg learning signal",  safe_mean(filtered,"learning_intensity_score"), accent="indigo")
-        with c4: stat_card("Avg continuity risk",  safe_mean(filtered,"absenteeism_risk_score"),   accent="danger")
+        with c1:
+            selected_employees_card(len(filtered))
+        with c2:
+            explorer_progress_card(
+                "Avg value proxy",
+                safe_mean(filtered, "human_capital_value_proxy"),
+                "Average human capital value proxy for the current filtered population.",
+                badge_labels=("Low", "Medium", "High"),
+            )
+        with c3:
+            explorer_progress_card(
+                "Avg learning signal",
+                safe_mean(filtered, "learning_intensity_score"),
+                "Average learning intensity signal for the current filtered population.",
+                badge_labels=("Low", "Medium", "High"),
+            )
+        with c4:
+            explorer_progress_card(
+                "Avg continuity risk",
+                safe_mean(filtered, "absenteeism_risk_score"),
+                "Average continuity / absence risk for the current filtered population.",
+                badge_labels=("Low", "Medium", "High"),
+            )
+
+        st.markdown('<div class="explorer-card-spacer"></div>', unsafe_allow_html=True)
 
         if {"learning_intensity_score","human_capital_value_proxy","segment_name"}.issubset(filtered.columns):
             fig = px.scatter(filtered,
                 x="learning_intensity_score", y="human_capital_value_proxy",
                 color="segment_name",
+                labels={
+                    "learning_intensity_score": "LEARNING INTENSITY SCORE",
+                    "human_capital_value_proxy": "HUMAN CAPITAL VALUE PROXY",
+                    "segment_name": "SEGMENT NAME",
+                },
                 hover_data=[c for c in ["display_employee","performance_score",
                                         "absenteeism_risk_score","kpi_reliability_score"]
                             if c in filtered.columns],
-                title="Learning intensity vs human capital value proxy",
+                title="<b>LEARNING INTENSITY VS HUMAN CAPITAL VALUE PROXY</b>",
+            )
+            fig.update_layout(legend_title_text="<b>SEGMENT NAME</b>")
+            fig.update_xaxes(
+                title="<b>LEARNING INTENSITY SCORE</b>",
+                tickformat=".0%",
+                showline=True,
+                linecolor="#334155",
+                linewidth=1.2,
+                mirror=False,
+                title_font=dict(color="#334155", family="DM Sans, system-ui, sans-serif", size=13),
+                tickfont=dict(color="#334155", family="DM Sans, system-ui, sans-serif", size=11),
+            )
+            fig.update_yaxes(
+                title="<b>HUMAN CAPITAL VALUE PROXY</b>",
+                tickformat=".0%",
+                showline=True,
+                linecolor="#334155",
+                linewidth=1.2,
+                mirror=False,
+                title_font=dict(color="#334155", family="DM Sans, system-ui, sans-serif", size=13),
+                tickfont=dict(color="#334155", family="DM Sans, system-ui, sans-serif", size=11),
             )
             st.plotly_chart(clean_chart(fig), use_container_width=True)
 
         if "sustainability_balance" in filtered.columns:
-            fig = px.histogram(filtered, x="sustainability_balance", nbins=30,
-                               color="segment_name",
-                               title="Sustainability balance distribution")
+            fig = px.histogram(
+                filtered,
+                x="sustainability_balance",
+                nbins=30,
+                color="segment_name",
+                color_discrete_map=segment_color_map(filtered["segment_name"]) if "segment_name" in filtered.columns else None,
+                labels={
+                    "sustainability_balance": "SUSTAINABILITY BALANCE",
+                    "segment_name": "SEGMENT NAME",
+                },
+                title="<b>SUSTAINABILITY BALANCE DISTRIBUTION</b>",
+            )
+            fig.update_layout(legend_title_text="<b>SEGMENT NAME</b>")
+            fig.update_xaxes(
+                title="<b>SUSTAINABILITY BALANCE</b>",
+                tickformat=".0%",
+                showline=True,
+                linecolor="#334155",
+                linewidth=1.2,
+                mirror=False,
+                title_font=dict(color="#334155", family="DM Sans, system-ui, sans-serif", size=13),
+                tickfont=dict(color="#334155", family="DM Sans, system-ui, sans-serif", size=11),
+            )
+            fig.update_yaxes(
+                title="<b>COUNT</b>",
+                showline=True,
+                linecolor="#334155",
+                linewidth=1.2,
+                mirror=False,
+                title_font=dict(color="#334155", family="DM Sans, system-ui, sans-serif", size=13),
+                tickfont=dict(color="#334155", family="DM Sans, system-ui, sans-serif", size=11),
+            )
             st.plotly_chart(clean_chart(fig), use_container_width=True)
 
         section_header("AI segment summary")
@@ -2560,7 +3959,17 @@ elif role == "HR":
                        .rename(columns={"size":"employees"}),
                        on="segment_name", how="left")
             )
-            st.dataframe(summary_df, use_container_width=True, hide_index=True)
+            st.markdown(
+                render_coaching_questions_table(
+                    summary_df,
+                    priority_col="",
+                    uppercase_headers=True,
+                    segment_col="segment_name",
+                    percent_cols=metrics,
+                    controls=False,
+                ),
+                unsafe_allow_html=True,
+            )
 
         section_header("Filtered employee profiles")
         filtered = filtered.merge(
@@ -2575,7 +3984,28 @@ elif role == "HR":
             "kpi_reliability_score","performance_score","learning_intensity_score",
             "absenteeism_risk_score","sustainability_balance","recommended_action",
         ] if c and c in filtered.columns]
-        st.dataframe(filtered[disp_cols], use_container_width=True, hide_index=True)
+        st.markdown(
+            render_coaching_questions_table(
+                filtered[disp_cols],
+                priority_col="priority_level",
+                uppercase_headers=True,
+                segment_col="segment_name",
+                compact=True,
+                percent_cols=[
+                    c for c in [
+                        "human_capital_value_proxy",
+                        "reliability_adjusted_value_proxy",
+                        "kpi_reliability_score",
+                        "performance_score",
+                        "learning_intensity_score",
+                        "absenteeism_risk_score",
+                        "sustainability_balance",
+                    ] if c in filtered.columns
+                ],
+                controls=False,
+            ),
+            unsafe_allow_html=True,
+        )
 
     # ── Drill-Down ────────────────────────────────────────────────────────────
     with tab4:
@@ -2592,17 +4022,62 @@ elif role == "HR":
         hr_emp_row = drill_df[drill_df["display_employee"]==sel_hr_emp].iloc[0]
 
         c1,c2,c3,c4 = st.columns(4)
-        with c1: stat_card("Value proxy",      fmt_score(_get(hr_emp_row,"human_capital_value_proxy")))
-        with c2: stat_card("Learning",         fmt_score(_get(hr_emp_row,"learning_intensity_score")), accent="indigo")
-        with c3: stat_card("Continuity risk",  fmt_score(_get(hr_emp_row,"absenteeism_risk_score")),   accent="danger")
-        with c4: stat_card("Reliability",      fmt_score(_get(hr_emp_row,"kpi_reliability_score")),    accent="warn")
+        with c1:
+            signal_progress_card(
+                "Value proxy",
+                _get(hr_emp_row, "human_capital_value_proxy"),
+                "Current value proxy for the selected employee.",
+                badge_labels=("Low performance", "Stable", "High performance"),
+            )
+        with c2:
+            signal_progress_card(
+                "Learning",
+                _get(hr_emp_row, "learning_intensity_score"),
+                "Current learning intensity signal for the selected employee.",
+                badge_labels=("Low performance", "Stable", "High performance"),
+            )
+        with c3:
+            signal_progress_card(
+                "Continuity risk",
+                _get(hr_emp_row, "absenteeism_risk_score"),
+                "Current continuity / absence risk signal for the selected employee.",
+                badge_labels=("Low performance", "Stable", "High performance"),
+            )
+        with c4:
+            signal_progress_card(
+                "Reliability",
+                _get(hr_emp_row, "kpi_reliability_score"),
+                "Current data reliability for the selected employee.",
+                badge_labels=("Low performance", "Stable", "High performance"),
+            )
 
         section_header("Individual signal summary")
         sig_cols = [c for c in [
             "display_employee",department_col,"segment_name","risk_prediction_label",
             "recommended_action","data_coverage_score","kpi_reliability_score","sustainability_balance",
         ] if c and c in employee_value.columns]
-        st.dataframe(pd.DataFrame([hr_emp_row[sig_cols]]), use_container_width=True, hide_index=True)
+        st.markdown(
+            '<div class="score-table-wrap--drilldown-summary">'
+            + render_coaching_questions_table(
+                pd.DataFrame([hr_emp_row[sig_cols]]),
+                priority_col="risk_prediction_label",
+                compact=True,
+                percent_cols=[
+                    c for c in [
+                        "data_coverage_score",
+                        "kpi_reliability_score",
+                        "sustainability_balance",
+                    ] if c in employee_value.columns
+                ],
+                uppercase_headers=True,
+                segment_col="segment_name",
+                controls=False,
+                wrap_class_override="score-table-wrap score-table-wrap--drilldown-summary",
+                wrap_style_override="",
+            )
+            + '</div>',
+            unsafe_allow_html=True,
+        )
 
         emp_log = load_log("employee_context_log.csv")
         mgr_log = load_log("manager_context_log.csv")
@@ -2683,26 +4158,64 @@ elif role == "HR":
         section_header("Data & Documents", "KPI audit, data quality checks, and document intelligence.")
 
         c1,c2,c3 = st.columns(3)
-        with c1: stat_card("Avg data coverage",  safe_mean(employee_value,"data_coverage_score"))
-        with c2: stat_card("Avg KPI reliability",safe_mean(employee_value,"kpi_reliability_score"), accent="warn")
-        with c3: stat_card("Low-data records",
-                           f"{int(employee_value['low_data_flag'].sum()):,}"
-                           if "low_data_flag" in employee_value.columns else "N/A", accent="danger")
+        with c1:
+            explorer_progress_card(
+                "Avg data coverage",
+                safe_mean(employee_value, "data_coverage_score"),
+                "Average completeness of the available data for the current population.",
+                badge_labels=("Low performance", "Stable", "High performance"),
+            )
+        with c2:
+            explorer_progress_card(
+                "Avg KPI reliability",
+                safe_mean(employee_value, "kpi_reliability_score"),
+                "Average reliability of the KPI signals for the current population.",
+                badge_labels=("Low performance", "Stable", "High performance"),
+            )
+        with c3:
+            low_data_records_card(
+                int(employee_value['low_data_flag'].sum()) if "low_data_flag" in employee_value.columns else 0
+            )
+
+        st.markdown("<div style='height: 1.25rem;'></div>", unsafe_allow_html=True)
 
         if "data_coverage_score" in employee_value.columns:
             fig = px.histogram(employee_value, x="data_coverage_score", nbins=20,
-                               title="Data coverage score distribution")
+                               title="Data coverage score distribution",
+                               labels={"data_coverage_score":"DATA COVERAGE SCORE"})
+            fig.update_xaxes(tickformat=".0%", title_text="DATA COVERAGE SCORE", title_font=dict(weight="bold"))
+            fig.update_yaxes(title_text="FREQUENCY", title_font=dict(weight="bold"))
             st.plotly_chart(clean_chart(fig), use_container_width=True)
+        
+        st.markdown("<br style='margin-bottom: 3.5rem;'>", unsafe_allow_html=True)
 
         section_header("KPI audit")
         kpi_section = st.radio("Choose KPI table",
             ["HR & Performance","Absenteeism / Continuity","Learning"], horizontal=True)
         if kpi_section == "HR & Performance":
-            st.dataframe(hr_kpi, use_container_width=True)
+            hr_kpi_display = hr_kpi.copy()
+            hr_kpi_display.columns = [col.replace('_', ' ').upper() for col in hr_kpi_display.columns]
+            percent_cols = [c for c in hr_kpi_display.columns if 'PERFORMANCE CONSISTENCY SCORE' in c or 'TALENT PROGRESSION PROXY' in c]
+            for col in percent_cols:
+                if col in hr_kpi_display.columns:
+                    hr_kpi_display[col] = hr_kpi_display[col].apply(lambda x: f"{x*100:.1f}%" if pd.notna(x) else x)
+            st.dataframe(hr_kpi_display, use_container_width=True)
         elif kpi_section == "Absenteeism / Continuity":
-            st.dataframe(absence_kpi, use_container_width=True)
+            absence_kpi_display = absence_kpi.copy()
+            absence_kpi_display.columns = [col.replace('_', ' ').upper() for col in absence_kpi_display.columns]
+            percent_cols = [c for c in absence_kpi_display.columns if 'SCORE' in c]
+            for col in percent_cols:
+                if col in absence_kpi_display.columns:
+                    absence_kpi_display[col] = absence_kpi_display[col].apply(lambda x: f"{x*100:.1f}%" if pd.notna(x) else x)
+            st.dataframe(absence_kpi_display, use_container_width=True)
         else:
-            st.dataframe(training_kpi, use_container_width=True)
+            training_kpi_display = training_kpi.copy()
+            training_kpi_display.columns = [col.replace('_', ' ').upper() for col in training_kpi_display.columns]
+            percent_cols = [c for c in training_kpi_display.columns if 'SCORE' in c]
+            for col in percent_cols:
+                if col in training_kpi_display.columns:
+                    training_kpi_display[col] = training_kpi_display[col].apply(lambda x: f"{x*100:.1f}%" if pd.notna(x) else x)
+            st.dataframe(training_kpi_display, use_container_width=True)
 
         st.divider()
         show_document_intelligence()
@@ -2738,18 +4251,17 @@ elif role == "HR":
             "gov",
         )
 
-
 # ════════════════════════════════════════════════════════════════════════════════
 # PRODUCT OWNER VIEW
 # ════════════════════════════════════════════════════════════════════════════════
 elif role == "Product Owner":
     tab1,tab2,tab3,tab4,tab5,tab6 = st.tabs([
-        "🏥 System Health",
-        "📐 Valuation Model",
-        "🔍 Data Quality",
-        "🤖 AI Monitoring",
-        "⚖️ Governance & Roadmap",
-        "📂 Document Pipeline",
+        "System Health",
+        "Valuation Model",
+        "Data Quality",
+        "AI Monitoring",
+        "Governance & Roadmap",
+        "Document Pipeline",
     ])
 
     # ── System Health ─────────────────────────────────────────────────────────
