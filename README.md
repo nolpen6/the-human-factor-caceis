@@ -381,3 +381,6 @@ The platform must not be used for automatic employee ranking, sanctions, or fina
 - bias checks
 - human review
 - GDPR and privacy safeguards
+
+
+TEAMS : Anna Mika, Nolwenn Montillot, Hannah Zilesch, Emma Lou Villaret
