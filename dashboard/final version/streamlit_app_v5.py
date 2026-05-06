@@ -614,6 +614,40 @@ div[data-testid="stPlotlyChart"] {
   border-top: 1px solid var(--border-2);
 }
 
+/* ── Explorer filter widget tuning ── */
+[data-testid="stMultiSelect"] [data-baseweb="tag"] {
+  background: #f1f5f9 !important;
+  border: 1px solid #cbd5e1 !important;
+  color: #334155 !important;
+}
+[data-testid="stMultiSelect"] [data-baseweb="tag"] * {
+  color: #334155 !important;
+}
+[data-testid="stMultiSelect"] [data-baseweb="tag"] svg {
+  fill: #64748b !important;
+}
+[data-testid="stMultiSelect"] [data-baseweb="value-container"]{
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  overflow-y: hidden !important;
+  max-height: 2.4rem !important;
+  scrollbar-width: thin;
+}
+[data-testid="stMultiSelect"] [data-baseweb="value-container"]::-webkit-scrollbar{
+  height: 6px;
+}
+[data-testid="stMultiSelect"] [data-baseweb="value-container"]::-webkit-scrollbar-thumb{
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+[data-testid="stMultiSelect"] [data-baseweb="tag"]{
+  flex: 0 0 auto !important;
+}
+[data-testid="stMultiSelect"] [role="listbox"] {
+  max-height: 240px !important;
+  overflow-y: auto !important;
+}
+
 /* ── "What it means" blue cards ── */
 .meaning-card {
   background: linear-gradient(135deg, #f0fdfa 0%, #e0f2fe 100%);
@@ -1742,6 +1776,63 @@ def wrapped_table_with_level_pills(df: pd.DataFrame, level_col: str = "Level"):
         + "</tbody></table></div>"
     )
     st.markdown(table_html, unsafe_allow_html=True)
+
+
+def multiselect_dropdown(
+    label: str,
+    options: list[str],
+    key: str,
+    default: list[str] | None = None,
+    max_height_px: int = 240,
+):
+    """
+    Dropdown-style multiselect:
+    - shows a compact summary in the main UI (All / None / N selected)
+    - selection happens inside a popover with search + select-all + scrollable checklist
+    """
+    opts = list(options or [])
+    if default is None:
+        default = opts
+
+    if key not in st.session_state:
+        st.session_state[key] = [o for o in default if o in opts]
+    else:
+        # keep only still-valid options (when filters upstream change)
+        st.session_state[key] = [o for o in st.session_state[key] if o in opts]
+
+    selected = list(st.session_state.get(key, []))
+    if len(selected) == 0:
+        summary = "None"
+    elif len(selected) >= len(opts) and len(opts) > 0:
+        summary = "All"
+    else:
+        summary = f"{len(selected)} selected"
+
+    with st.popover(f"{label}: {summary}"):
+        search = st.text_input("Search", value="", key=f"{key}__search")
+        q = search.strip().lower()
+        visible = [o for o in opts if (q in str(o).lower())] if q else opts
+
+        all_checked = len(selected) == len(opts) and len(opts) > 0
+        select_all = st.checkbox("Select all", value=all_checked, key=f"{key}__all")
+        if select_all:
+            selected = opts[:]
+            st.session_state[key] = selected
+        else:
+            sel_set = set(selected)
+            with st.container(height=max_height_px):
+                for o in visible:
+                    ck_key = f"{key}__opt__{o}"
+                    checked = o in sel_set
+                    new_checked = st.checkbox(str(o), value=checked, key=ck_key)
+                    if new_checked:
+                        sel_set.add(o)
+                    else:
+                        sel_set.discard(o)
+            # keep original option order
+            st.session_state[key] = [o for o in opts if o in sel_set]
+
+    return list(st.session_state.get(key, []))
 
 
 def clean_chart(fig):
@@ -3829,10 +3920,10 @@ elif role == "HR":
 
         fc1,fc2,fc3 = st.columns(3)
         with fc1:
-            sel_segs = st.multiselect("Filter by AI segment",
-                sorted(filtered["segment_name"].dropna().unique()),
-                default=sorted(filtered["segment_name"].dropna().unique()))
-            filtered = filtered[filtered["segment_name"].isin(sel_segs)]
+            segs = sorted(filtered["segment_name"].dropna().unique())
+            sel_seg = st.selectbox("Filter by AI segment", ["All"] + segs)
+            if sel_seg != "All":
+                filtered = filtered[filtered["segment_name"] == sel_seg]
         with fc2:
             if "low_data_flag" in filtered.columns:
                 ld_choice = st.selectbox("Data visibility",
@@ -3844,8 +3935,9 @@ elif role == "HR":
         with fc3:
             if department_col:
                 depts = sorted(filtered[department_col].dropna().unique())
-                sel_depts = st.multiselect("Filter by department/entity", depts, default=depts)
-                filtered = filtered[filtered[department_col].isin(sel_depts)]
+                sel_dept = st.selectbox("Filter by department/entity", ["All"] + depts)
+                if sel_dept != "All":
+                    filtered = filtered[filtered[department_col] == sel_dept]
 
         c1,c2,c3,c4 = st.columns(4)
         with c1:
@@ -4222,6 +4314,12 @@ elif role == "HR":
 
     # ── Usage & Principles ────────────────────────────────────────────────────
     with tab7:
+        callout(
+            "<b>Important:</b> this is a decision-support tool. It helps identify where attention may "
+            "be needed, but final decisions always require human judgment.",
+            "gov",
+        )
+
         section_header("Usage & Principles")
         c_does, c_doesnt = st.columns(2)
         with c_does:
@@ -4245,11 +4343,6 @@ elif role == "HR":
             {"Principle":"AI as signal, not truth",        "Why it matters":"Models have limitations; human judgment is essential."},
             {"Principle":"Keep humans in the loop",        "Why it matters":"Final decisions always require human accountability."},
         ]))
-        callout(
-            "<b>Important:</b> this is a decision-support tool. It helps identify where attention may "
-            "be needed, but final decisions always require human judgment.",
-            "gov",
-        )
 
 # ════════════════════════════════════════════════════════════════════════════════
 # PRODUCT OWNER VIEW
