@@ -27,16 +27,12 @@ The key idea: **KPIs are not value. They are signals.** A high performance score
 | HR | `hr_001` | "Where are the workforce risks?" |
 | Product Owner / Admin | `admin_001` | "Is this system ready to deploy?" |
 
-**Suggested total run time:** 30–40 minutes
-**Minimum demo (20 min):** Do Employee + Manager + HR Action Center only.
-
 ---
 
 ---
 
 # PART 1 — EMPLOYEE VIEW
 ### Login: `emp_001`
-**Estimated time: 6–8 minutes**
 
 ---
 
@@ -125,7 +121,6 @@ The key idea: **KPIs are not value. They are signals.** A high performance score
 
 # PART 2 — MANAGER VIEW
 ### Login: `mgr_001`
-### Estimated time: 8–10 minutes
 
 ---
 
@@ -228,7 +223,6 @@ The key idea: **KPIs are not value. They are signals.** A high performance score
 
 # PART 3 — HR VIEW
 ### Login: `hr_001`
-### Estimated time: 8–10 minutes
 
 ---
 
@@ -343,7 +337,6 @@ The key idea: **KPIs are not value. They are signals.** A high performance score
 
 # PART 4 — PRODUCT OWNER / ADMIN VIEW
 ### Login: `admin_001`
-### Estimated time: 6–8 minutes
 
 ---
 
@@ -514,7 +507,7 @@ The key idea: **KPIs are not value. They are signals.** A high performance score
 
 **Before the demo:**
 - Confirm the app is running (URL provided separately)
-- Have login IDs ready: `emp_001`, `mgr_001`, `hr_001`, `admin_001`
+- Have login IDs ready: `emp_001`, `emp_002`, `mgr_001`, `mgr_002`, `hr_001`, `admin_001`
 - Keep this document open on a second screen or printed
 
 **If the app is slow:**
@@ -526,12 +519,5 @@ The key idea: **KPIs are not value. They are signals.** A high performance score
 - That's not a bug — it's the system being honest about what it sees
 - You can say: "This is real data. The system is showing us exactly what it would show in production."
 
-**Recommended demo order for shorter sessions:**
-
-| Time available | Roles to cover |
-|----------------|----------------|
-| 20 min | Employee → Manager (Drill-Down only) → HR Action Center |
-| 30 min | All four roles, abbreviated tabs only |
-| 40 min | Full script as written |
 
 ---
